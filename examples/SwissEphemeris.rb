@@ -8,17 +8,17 @@ class SwissEphemeris
         ME: { id: Swe4r::SE_MERCURY, name: 'mercury', symbol: '☿'},
         VE: { id: Swe4r::SE_VENUS, name: 'venus', symbol: '♀'},
         MA: { id: Swe4r::SE_MARS, name: 'mars', symbol: '♂'},
-        JU: Swe4r::SE_JUPITER,
-        SA: Swe4r::SE_SATURN,
-        UR: Swe4r::SE_URANUS,
-        NE: Swe4r::SE_NEPTUNE,
-        PL: Swe4r::SE_PLUTO,
-        MN: Swe4r::SE_MEAN_NODE,
+        JU: { id: Swe4r::SE_JUPITER, name: 'jupiter', symbol: '♃'},
+        SA: { id: Swe4r::SE_SATURN, name: 'saturn', symbol: '♄'},
+        UR: { id: Swe4r::SE_URANUS, name: 'uranus', symbol: '♅'},
+        NE: { id: Swe4r::SE_NEPTUNE, name: 'neptune', symbol: '♆'},
+        PL: { id: Swe4r::SE_PLUTO, name: 'pluto', symbol: '♇'}, #'⛢'
+        MN: { id:Swe4r::SE_MEAN_NODE, name: 'n. node', symbol: '☊'},
         TN: Swe4r::SE_TRUE_NODE,
         LI: Swe4r::SE_MEAN_APOG,
         TL: Swe4r::SE_OSCU_APOG, 
         EA: Swe4r::SE_EARTH,
-        CH: Swe4r::SE_CHIRON,
+        CH: { id: Swe4r::SE_CHIRON, name: 'chiron', symbol: '⚷'},
         CE: Swe4r::SE_CERES,
         PA: Swe4r::SE_PALLAS,
         PH: Swe4r::SE_PHOLUS,
@@ -52,7 +52,7 @@ class SwissEphemeris
             # https://www.astro.com/swisseph/swephprg.htm
             params[:use_moshier_ephemeris] = true unless params[:moshier_ephemeris] == false
             @flags = Swe4r::SEFLG_SPEED  
-            @flags |= Swe4r::SEFLG_TRUEPOS if params[:true_positions] # no light time correction - return true positions, not apparent
+            @flags |= Swe4r::SEFLG_TRUEPOS if params[:trues] # no light time correction - return true positions, not apparent
             @flags |= Swe4r::SEFLG_SIDEREAL if params[:sidereal]
             @flags |= Swe4r::SEFLG_TOPOCTR if params[:topocentric]
             @flags |= Swe4r::SEFLG_HELCTR if params[:heliocentric]
@@ -80,8 +80,8 @@ class SwissEphemeris
             return Body.new( values[0], values[1], values[2], values[3], obj[:name], obj[:symbol] )
         end
 
-        def houses( method = 'K' )
-            output = Swe4r::swe_houses( self.jd, self.latitude, self.longitude, method )
+        def houses( calc_method = 'K' )
+            output = Swe4r::swe_houses( self.jd, self.latitude, self.longitude, calc_method )
             @cusps = output[1..12];
             ascmc = output[13..-1];
             @asc, @mc, @armc, @vertex = @ascm[0..3]
@@ -126,79 +126,94 @@ require 'geocoder'
 results = Geocoder.search('Anchorage, AK')
 calculator.set_topo( results.first.longitude, results.first.latitude )
 
+# calculator.houses
+
 sun = calculator.position(:SO)
 moon = calculator.position(:MO)
 mercury = calculator.position(:ME)
+venus = calculator.position(:VE)
+mars = calculator.position(:MA)
+jupiter = calculator.position(:JU)
+saturn = calculator.position(:SA)
+uranus = calculator.position(:UR)
+neptune = calculator.position(:NE)
+pluto = calculator.position(:PL)
+
+# chiron = calculator.position(:CH)
+# node = calculator.position(:NN)
+
+# pallas = calculator.position(:pallas)
+# ceres = calculator.position(:ceres)
+# vesta = calculator.position(:vesta)
+# juno = calculator.position(:juno)
 
 
-# moon_position = calculator.position(:moon)
-# mercury_position = calculator.position(:mercury)
-# venus_position = calculator.position(:venus)
-# mars_position = calculator.position(:mars)
-# jupiter_position = calculator.position(:jupiter)
-# saturn_position = calculator.position(:saturn)
-# uranus_position = calculator.position(:uranus)
-# neptune_position = calculator.position(:neptune)
-# pluto_position = calculator.position(:pluto)
-
-# chiron_position = calculator.position(:chiron)
-# pallas_position = calculator.position(:pallas)
-# ceres_position = calculator.position(:ceres)
-# vesta_position = calculator.position(:vesta)
-# Juno_position = calculator.position(:juno)
-
-
-
-#
-SYMBOLS = {
-    SO: '☉',
-    MO: '☽',
-    ME: '☿',
-    VE: '♀',
-    MA: '♂',
-    JU: '♃',
-    SA: '♄',
-    UR: '♅',
-    NE: '♆',
-    PL: '⛢', #'♇',
-    CH: '',
-    # PA:
-    # CE:
-    # VS:
-    # JO:
-}
+def calculate_aspects(degree1, degree2, orb = 12)
+    # Create an empty array to store the harmonics
+    harmonics = {}
+  
+    # Iterate over the range of harmonics
+    (1..31).each do |harmonic|
+      # Calculate the difference based on the harmonic and default orb value
+      difference = (360.0/harmonic - (degree1 - degree2).abs).abs
+  
+      # Check if the difference is within the orb range
+      if difference <= orb/harmonic
+        # If the difference is within the orb range, add the harmonic to the array
+        harmonics[harmonic] = difference
+      end
+    end
+  
+    # Return the array of harmonics
+    return harmonics
+end
 
 
-def draw_chart( planets )
-    # First, create a new SVG document:
-    svg = RSVG::Handle.new
+def calc_all_aspects( planets, orb=12 )
+    return if planets.size == 0
+    p1 = planets.pop
+    planets.each do |p2|
+      puts "aspects between #{p1.name} and #{p2.name}: #{calculate_aspects(p1.lon, p2.lon, orb)}"
+    end
+    calc_all_aspects( planets )
+end
 
-    # Set the width and height of the chart:
-    svg.width = 800
-    svg.height = 800
+chart = [sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto ].reverse
+calc_all_aspects( chart, 24 )
 
-    # Set the background color to white:
-    svg.add_rect(0, 0, svg.width, svg.height, fill: 'white')
+require 'victor'
+
+def draw_chart( planets, rotate = 90 )
+    svg = Victor::SVG.new
+    dim = 800.0;
+    svg.setup width: dim, height: dim
+    
+    svg.build do 
+        # Set the background color to white:
+        rect x: 0, y: 0, width: dim, height: dim, fill: 'white'
 
     # Add the positions of the planets and asteroids to the chart:
 
     # Set the radius of the chart in pixels:
-    radius = 300
-
+        radius = 300
+        circle cx: dim/2, cy: dim/2, r: radius+10, fill: 'white', style: { stroke: 'black', stroke_width: 1 }
+    
     # Calculate the x and y coordinates for each planet and asteroid based on its position and the radius of the chart:
-    sun_position = planets[:sun]
-    sun_x = radius * Math.cos(sun_position * Math::PI / 180)
-    sun_y = radius * Math.sin(sun_position * Math::PI / 180)
-    moon_position = planets[:moon]
-    moon_x = radius * Math.cos(moon_position * Math::PI / 180)
-    moon_y = radius * Math.sin(moon_position * Math::PI / 180)
-    # ...
+        planets.each do |planet|
+            deg = planet.lon + rotate
+            y = radius * Math.cos(deg * Math::PI / 180 ) + dim/2
+            x = radius * Math.sin(deg * Math::PI / 180 ) + dim/2
+            text planet.symbol, x: x, y: y, fill: 'black'
+            text planet.name.capitalize, x: x+10, y: y+10, fill: 'gray`'
+        end
+    end
 
-    # Add a circle for each planet and asteroid to the chart:
-    svg.add_text(sun_x, sun_y, SYMBOLS[:SO], fill: 'yellow')
-    # svg.add_text(sun_x + 10, sun_y + 10, "Sun")
-    svg.add_text(moon_x, moon_y, SYMBOLS[:SO], fill: 'gray')
+    # Save the SVG to a file:
+    svg.save("astro-chart.svg")
 
+    # png_data = svg.to_png_data
+    # File.write("astro-chart.png", png_data)
 end
 
+draw_chart( chart )
 
