@@ -4,9 +4,10 @@ Gem::Specification.new do |s|
   s.date              = '2022-12-25'
   s.summary           = "Swiss Ephemeris for Ruby"
   s.description       = "A C extension for the Swiss Ephemeris library (http://www.astro.com/swisseph/)"
+  s.homepage          = "https://github.com/dfl/swe4r"
   s.author            = "David Lowenfels"
   s.email             = "dfl@alum.mit.edu"
-  s.license           = "GPL-2"
+  s.license           = "GPL-2.0"
   s.extra_rdoc_files  = ['README.rdoc']
   s.files             = Dir.glob('lib/**/*.{rb}') + Dir.glob('ext/**/*.{rb,h,c}')
   s.extensions        = ['ext/swe4r/extconf.rb']
