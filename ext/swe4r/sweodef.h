@@ -1,5 +1,4 @@
 /************************************************************
-   $Header: /home/dieter/sweph/RCS/sweodef.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions and constants for all Swiss Ephemeris source files,
    only required for compiling the libraries, not for the external
    interface of the libraries.
@@ -14,7 +13,7 @@
    
 ************************************************************/
 
-/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -30,17 +29,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU public license version 2 or later
+  a) GNU Affero General Public License (AGPL)
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the GNU GPL software license, he or she must fulfill
+  If the developer choses the AGPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the GNU GPL or a compatible license.
-  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+  or her whole software project under the AGPL or a compatible license.
+  See https://www.gnu.org/licenses/agpl-3.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -75,6 +74,24 @@
 # define MY_TRUE 1	/* for use in other defines, before TRUE is defined */
 # define MY_FALSE 0	/* for use in other defines, before TRUE is defined */
 
+#ifdef __CYGWIN__	// following T. Mack Jan/July 2021
+# undef __GNUC__
+#endif
+
+/* TLS support
+ *
+ * Sun Studio C/C++, IBM XL C/C++, GNU C and Intel C/C++ (Linux systems) -> __thread
+ * Borland, VC++ -> __declspec(thread)
+ */
+#if !defined(TLSOFF) && !defined( __APPLE__ ) && !defined(WIN32) && !defined(DOS32)
+#if defined( __GNUC__ ) || defined( __CYGWIN__ ) 
+#define TLS     __thread
+#else
+#define TLS     __declspec(thread)
+#endif
+#else
+#define TLS
+#endif
 
 #ifdef _WIN32		/* Microsoft VC 5.0 does not define MSDOS anymore */
 # undef MSDOS
@@ -135,12 +152,10 @@
 #  ifndef TURBO_C
 #    define MS_C	/* assume Microsoft C compiler */
 #  endif
-# define MYFAR far
 # define UNIX_FS MY_FALSE
 #else
 # ifdef MACOS
 #  define HPUNIX MY_FALSE
-#  define MYFAR
 #  define UNIX_FS MY_FALSE
 # else
 #  define MSDOS MY_FALSE
@@ -148,7 +163,6 @@
 #  ifndef _HPUX_SOURCE
 #    define _HPUX_SOURCE
 #  endif
-#  define MYFAR
 #  define UNIX_FS MY_TRUE
 # endif
 #endif
@@ -251,12 +265,16 @@ typedef unsigned char UCHAR;
 #  define M_PI 3.14159265358979323846
 #endif
  
-#define forward static
+/* #define forward static  obsolete */
 
 #define AS_MAXCH 256    /* used for string declarations, allowing 255 char+\0 */
  
+/*
 #define DEGTORAD 0.0174532925199433
 #define RADTODEG 57.2957795130823
+*/
+#define RADTODEG (180.0 / M_PI)
+#define DEGTORAD (M_PI / 180.0)
  
 typedef int32    centisec;       /* centiseconds used for angles and times */
 #define CS	(centisec)	/* use for casting */
@@ -275,8 +293,10 @@ typedef int32    centisec;       /* centiseconds used for angles and times */
 #define DEG270  (270 * DEG)
 #define DEG360  (360 * DEG)
  
-#define CSTORAD  4.84813681109536E-08 /* centisec to rad: pi / 180 /3600/100 */
-#define RADTOCS  2.06264806247096E+07 /* rad to centisec 180*3600*100/pi */
+/* #define CSTORAD  4.84813681109536E-08  centisec to rad: pi / 180 /3600/100 */
+/* #define RADTOCS  2.06264806247096E+07  rad to centisec 180*3600*100/pi */
+#define CSTORAD	(DEGTORAD / 360000.0)
+#define RADTOCS (RADTODEG * 360000.0)
  
 #define CS2DEG	(1.0/360000.0)	/* centisec to degree */
 

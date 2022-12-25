@@ -1,12 +1,11 @@
 /* SWISSEPH
-   $Header: /home/dieter/sweph/RCS/swemplan.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
    Moshier planet routines
 
    modified for SWISSEPH by Dieter Koch
 
 **************************************************************/
-/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
-  
+/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
+
   License conditions
   ------------------
 
@@ -21,17 +20,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU public license version 2 or later
+  a) GNU Affero General Public License (AGPL)
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the GNU GPL software license, he or she must fulfill
+  If the developer choses the AGPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the GNU GPL or a compatible license.
-  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+  or her whole software project under the AGPL or a compatible license.
+  See https://www.gnu.org/licenses/agpl-3.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -63,7 +62,7 @@
 #include "swephexp.h"
 #include "sweph.h"
 #include "swephlib.h"
-#include "./src/swemptab.c"
+#include "swemptab.h"
 
 #define TIMESCALE 3652500.0
 
@@ -82,11 +81,11 @@ static int read_elements_file(int32 ipl, double tjd,
   double *parg, double *node, double *incl,
   char *pname, int32 *fict_ifl, char *serr);
 
-static int pnoint2msh[]   = {2, 2, 0, 1, 3, 4, 5, 6, 7, 8, };
+static const int pnoint2msh[]   = {2, 2, 0, 1, 3, 4, 5, 6, 7, 8, };
 
 
 /* From Simon et al (1994)  */
-static double freqs[] =
+static const double freqs[] =
 {
 /* Arc sec per 10000 Julian years.  */
   53810162868.8982,
@@ -100,7 +99,7 @@ static double freqs[] =
   52272245.1795
 };
 
-static double phases[] =
+static const double phases[] =
 {
 /* Arc sec.  */
   252.25090552 * 3600.,
@@ -114,7 +113,7 @@ static double phases[] =
   860492.1546,
 };
 
-static struct plantbl *planets[] =
+static const struct plantbl *planets[] =
 {
   &mer404,
   &ven404,
@@ -127,19 +126,19 @@ static struct plantbl *planets[] =
   &plu404
 };
 
-static double FAR ss[9][24];
-static double FAR cc[9][24];
+static TLS double ss[9][24];
+static TLS double cc[9][24];
 
 static void sscc (int k, double arg, int n);
 
 int swi_moshplan2 (double J, int iplm, double *pobj)
 {
   int i, j, k, m, k1, ip, np, nt;
-  signed char FAR *p;
-  double FAR *pl, *pb, *pr;
+  signed char *p;
+  double *pl, *pb, *pr;
   double su, cu, sv, cv, T;
   double t, sl, sb, sr;
-  struct plantbl *plan = planets[iplm];
+  const struct plantbl *plan = planets[iplm];
 
   T = (J - J2000) / TIMESCALE;
   /* Calculate sin( i*MM ), etc. for needed multiple angles.  */
@@ -504,7 +503,7 @@ static void embofs_mosh(double tjd, double *xemb)
  */
 #define SE_NEELY                /* use James Neely's revised elements 
                                  *      of Uranian planets*/
-static char *plan_fict_nam[SE_NFICT_ELEM] =
+static const char *plan_fict_nam[SE_NFICT_ELEM] =
   {"Cupido", "Hades", "Zeus", "Kronos", 
    "Apollon", "Admetos", "Vulkanus", "Poseidon",
    "Isis-Transpluto", "Nibiru", "Harrington",
@@ -520,7 +519,7 @@ char *swi_get_fict_name(int32 ipl, char *snam)
   return snam;
 }
 
-static double plan_oscu_elem[SE_NFICT_ELEM][8] = {
+static const double plan_oscu_elem[SE_NFICT_ELEM][8] = {
 #ifdef SE_NEELY
   {J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833},/* Cupido Neely */ 
   {J1900, J1900,  27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500},/* Hades Neely */
@@ -759,7 +758,7 @@ static int read_elements_file(int32 ipl, double tjd,
       if (serr != NULL) {
         sprintf(serr, "%s nine elements required", serri);
       }
-      return ERR;
+      goto return_err;
     }
     iplan++;
     if (iplan != ipl)

@@ -1,5 +1,4 @@
 /************************************************************
-  $Header: /home/dieter/sweph/RCS/swephexp.h,v 1.75 2009/04/08 07:19:08 dieter Exp $
   SWISSEPH: exported definitions and constants 
 
   This file represents the standard application interface (API)
@@ -19,7 +18,7 @@
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 ************************************************************/
-/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -35,17 +34,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU public license version 2 or later
+  a) GNU Affero General Public License (AGPL)
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the GNU GPL software license, he or she must fulfill
+  If the developer choses the AGPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the GNU GPL or a compatible license.
-  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+  or her whole software project under the AGPL or a compatible license.
+  See https://www.gnu.org/licenses/agpl-3.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -86,6 +85,10 @@ extern "C" {
  * definitions for use also by non-C programmers
  ***********************************************************/
 
+#define SE_AUNIT_TO_KM        (149597870.700)
+#define SE_AUNIT_TO_LIGHTYEAR (1.0/63241.07708427)
+#define SE_AUNIT_TO_PARSEC    (1.0/206264.8062471) 
+
 /* values for gregflag in swe_julday() and swe_revjul() */
 # define SE_JUL_CAL	0
 # define SE_GREG_CAL	1
@@ -121,6 +124,7 @@ extern "C" {
 
 #define SE_NPLANETS     23      
 
+#define SE_PLMOON_OFFSET   9000
 #define SE_AST_OFFSET   10000
 #define SE_VARUNA   (SE_AST_OFFSET + 20000)
 
@@ -183,32 +187,52 @@ extern "C" {
 #define SEFLG_SWIEPH    2       /* use SWISSEPH ephemeris */
 #define SEFLG_MOSEPH    4       /* use Moshier ephemeris */
 
-#define SEFLG_HELCTR	8      /* return heliocentric position */
-#define SEFLG_TRUEPOS	16     /* return true positions, not apparent */
+#define SEFLG_HELCTR	8      /* heliocentric position */
+#define SEFLG_TRUEPOS	16     /* true/geometric position, not apparent position */
 #define SEFLG_J2000	32     /* no precession, i.e. give J2000 equinox */
 #define SEFLG_NONUT	64     /* no nutation, i.e. mean equinox of date */
-#define SEFLG_SPEED3	128     /* speed from 3 positions (do not use it,
-                                  SEFLG_SPEED is faster and more precise.) */
-#define SEFLG_SPEED	256     /* high precision speed  */
-#define SEFLG_NOGDEFL	512     /* turn off gravitational deflection */
-#define SEFLG_NOABERR	1024    /* turn off 'annual' aberration of light */
+#define SEFLG_SPEED3	128    /* speed from 3 positions (do not use it,
+                                * SEFLG_SPEED is faster and more precise.) */
+#define SEFLG_SPEED	256    /* high precision speed  */
+#define SEFLG_NOGDEFL	512    /* turn off gravitational deflection */
+#define SEFLG_NOABERR	1024   /* turn off 'annual' aberration of light */
+#define SEFLG_ASTROMETRIC (SEFLG_NOABERR|SEFLG_NOGDEFL) /* astrometric position,
+                                * i.e. with light-time, but without aberration and
+			        * light deflection */
 #define SEFLG_EQUATORIAL (2*1024)    /* equatorial positions are wanted */
-#define SEFLG_XYZ	(4*1024)    /* cartesian, not polar, coordinates */
-#define SEFLG_RADIANS	(8*1024)    /* coordinates in radians, not degrees */
-#define SEFLG_BARYCTR	(16*1024)   /* barycentric positions */
-#define SEFLG_TOPOCTR	(32*1024)   /* topocentric positions */
-#define SEFLG_SIDEREAL	(64*1024)   /* sidereal positions */
+#define SEFLG_XYZ	(4*1024)     /* cartesian, not polar, coordinates */
+#define SEFLG_RADIANS	(8*1024)     /* coordinates in radians, not degrees */
+#define SEFLG_BARYCTR	(16*1024)    /* barycentric position */
+#define SEFLG_TOPOCTR	(32*1024)    /* topocentric position */
+#define SEFLG_ORBEL_AA SEFLG_TOPOCTR /* used for Astronomical Almanac mode in 
+                                      * calculation of Kepler elipses */
+#define SEFLG_TROPICAL	(0)          /* tropical position (default) */
+#define SEFLG_SIDEREAL	(64*1024)    /* sidereal position */
 #define SEFLG_ICRS	(128*1024)   /* ICRS (DE406 reference frame) */
 #define SEFLG_DPSIDEPS_1980	(256*1024) /* reproduce JPL Horizons 
                                       * 1962 - today to 0.002 arcsec. */
 #define SEFLG_JPLHOR	SEFLG_DPSIDEPS_1980
 #define SEFLG_JPLHOR_APPROX	(512*1024)   /* approximate JPL Horizons 1962 - today */
+#define SEFLG_CENTER_BODY	(1024*1024)  /* calculate position of center of body (COB)
+                                                of planet, not barycenter of its system */
+#define SEFLG_TEST_PLMOON	(2*1024*1024 | SEFLG_J2000 | SEFLG_ICRS | SEFLG_HELCTR | SEFLG_TRUEPOS)  /* test raw data in files sepm9* */
+
 
 #define SE_SIDBITS		256
 /* for projection onto ecliptic of t0 */
 #define SE_SIDBIT_ECL_T0        256
 /* for projection onto solar system plane */
 #define SE_SIDBIT_SSY_PLANE     512
+/* with user-defined ayanamsha, t0 is UT */
+#define SE_SIDBIT_USER_UT       1024
+/* ayanamsha measured on ecliptic of date;
+ * see commentaries in sweph.c:swi_get_ayanamsa_ex(). */
+#define SE_SIDBIT_ECL_DATE      2048
+/* test feature: don't apply constant offset to ayanamsha 
+ * see commentary above sweph.c:get_aya_correction() */
+#define SE_SIDBIT_NO_PREC_OFFSET       4096
+/* test feature: calculate ayanamsha using its original precession model */
+#define SE_SIDBIT_PREC_ORIG     8192
 
 /* sidereal modes (ayanamsas) */
 #define SE_SIDM_FAGAN_BRADLEY    0
@@ -240,9 +264,28 @@ extern "C" {
 #define SE_SIDM_SS_CITRA        26
 #define SE_SIDM_TRUE_CITRA      27
 #define SE_SIDM_TRUE_REVATI     28
-#define SE_SIDM_USER            255
+#define SE_SIDM_TRUE_PUSHYA     29
+#define SE_SIDM_GALCENT_RGILBRAND 30
+#define SE_SIDM_GALEQU_IAU1958  31
+#define SE_SIDM_GALEQU_TRUE     32
+#define SE_SIDM_GALEQU_MULA     33
+#define SE_SIDM_GALALIGN_MARDYKS 34
+#define SE_SIDM_TRUE_MULA       35
+#define SE_SIDM_GALCENT_MULA_WILHELM       36
+#define SE_SIDM_ARYABHATA_522   37
+#define SE_SIDM_BABYL_BRITTON   38
+#define SE_SIDM_TRUE_SHEORAN  	39
+#define SE_SIDM_GALCENT_COCHRANE   	40
+#define SE_SIDM_GALEQU_FIORENZA 41
+#define SE_SIDM_VALENS_MOON     42
+#define SE_SIDM_LAHIRI_1940     43
+#define SE_SIDM_LAHIRI_VP285    44
+#define SE_SIDM_KRISHNAMURTI_VP291    45
+#define SE_SIDM_LAHIRI_ICRC     46
+//#define SE_SIDM_MANJULA         43
+#define SE_SIDM_USER            255 /* user-defined ayanamsha, t0 is TT */
 
-#define SE_NSIDM_PREDEF	      29
+#define SE_NSIDM_PREDEF	        47
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -267,6 +310,7 @@ extern "C" {
 #define SE_ECL_ANNULAR		8
 #define SE_ECL_PARTIAL		16
 #define SE_ECL_ANNULAR_TOTAL	32
+#define SE_ECL_HYBRID   	32  // = annular-total
 #define SE_ECL_PENUMBRAL	64
 #define SE_ECL_ALLTYPES_SOLAR   (SE_ECL_CENTRAL|SE_ECL_NONCENTRAL|SE_ECL_TOTAL|SE_ECL_ANNULAR|SE_ECL_PARTIAL|SE_ECL_ANNULAR_TOTAL)
 #define SE_ECL_ALLTYPES_LUNAR   (SE_ECL_TOTAL|SE_ECL_PARTIAL|SE_ECL_PENUMBRAL)
@@ -299,15 +343,22 @@ extern "C" {
 #define SE_BIT_DISC_BOTTOM      8192 /* to be or'ed to SE_CALC_RISE/SET,
                                       * if rise or set of lower limb of 
 				      * disc is requried */
+#define SE_BIT_GEOCTR_NO_ECL_LAT 128 /* use geocentric rather than topocentric 
+                                        position of object and 
+					ignore its ecliptic latitude */
 #define SE_BIT_NO_REFRACTION    512 /* to be or'ed to SE_CALC_RISE/SET, 
 				     * if refraction is to be ignored */
 #define SE_BIT_CIVIL_TWILIGHT    1024 /* to be or'ed to SE_CALC_RISE/SET */
 #define SE_BIT_NAUTIC_TWILIGHT   2048 /* to be or'ed to SE_CALC_RISE/SET */
 #define SE_BIT_ASTRO_TWILIGHT    4096 /* to be or'ed to SE_CALC_RISE/SET */
-#define SE_BIT_FIXED_DISC_SIZE (16*1024) /* or'ed to SE_CALC_RISE/SET:
+#define SE_BIT_FIXED_DISC_SIZE  16384 /* or'ed to SE_CALC_RISE/SET:
                                      * neglect the effect of distance on
 				     * disc size */
-
+#define SE_BIT_FORCE_SLOW_METHOD 32768 /* This is only an Astrodienst in-house
+                                        * test flag. It forces the usage
+					* of the old, slow calculation of
+					* risings and settings. */
+#define SE_BIT_HINDU_RISING  (SE_BIT_DISC_CENTER|SE_BIT_NO_REFRACTION|SE_BIT_GEOCTR_NO_ECL_LAT)
 
 /* for swe_azalt() and swe_azalt_rev() */
 #define SE_ECL2HOR		0
@@ -347,11 +398,7 @@ extern "C" {
 
 #ifndef SE_EPHE_PATH
 #if MSDOS
-#ifdef PAIR_SWEPH
-#  define SE_EPHE_PATH    "\\pair\\ephe\\"
-#else
 #  define SE_EPHE_PATH    "\\sweph\\ephe\\"
-#endif
 #else
 # ifdef MACOS
 #  define SE_EPHE_PATH	":ephe:"
@@ -370,6 +417,7 @@ extern "C" {
 # define SE_SPLIT_DEG_ROUND_MIN    2
 # define SE_SPLIT_DEG_ROUND_DEG    4
 # define SE_SPLIT_DEG_ZODIACAL     8
+# define SE_SPLIT_DEG_NAKSHATRA 1024
 # define SE_SPLIT_DEG_KEEP_SIGN   16	/* don't round to next sign, 
 					 * e.g. 29.9999999 will be rounded
 					 * to 29d59'59" (or 29d59' or 29d) */
@@ -395,16 +443,19 @@ extern "C" {
 #define SE_HELFLAG_SEARCH_1_PERIOD	(1 << 11)  /*  2048 */
 #define SE_HELFLAG_VISLIM_DARK		(1 << 12)  /*  4096 */
 #define SE_HELFLAG_VISLIM_NOMOON	(1 << 13)  /*  8192 */
+/* the following undocumented defines are for test reasons only */
 #define SE_HELFLAG_VISLIM_PHOTOPIC	(1 << 14)  /* 16384 */
-#define SE_HELFLAG_AV	 		(1 << 15)  /* 32768 */
-#define SE_HELFLAG_AVKIND_VR 		(1 << 15)  /* 32768 */
-#define SE_HELFLAG_AVKIND_PTO 		(1 << 16)
-#define SE_HELFLAG_AVKIND_MIN7 		(1 << 17)
-#define SE_HELFLAG_AVKIND_MIN9 		(1 << 18)
+#define SE_HELFLAG_VISLIM_SCOTOPIC	(1 << 15)  /* 32768 */
+#define SE_HELFLAG_AV	 		(1 << 16)  /* 65536 */
+#define SE_HELFLAG_AVKIND_VR 		(1 << 16)  /* 65536 */
+#define SE_HELFLAG_AVKIND_PTO 		(1 << 17)
+#define SE_HELFLAG_AVKIND_MIN7 		(1 << 18)
+#define SE_HELFLAG_AVKIND_MIN9 		(1 << 19)
 #define SE_HELFLAG_AVKIND (SE_HELFLAG_AVKIND_VR|SE_HELFLAG_AVKIND_PTO|SE_HELFLAG_AVKIND_MIN7|SE_HELFLAG_AVKIND_MIN9)
 #define TJD_INVALID		 	99999999.0
 #define SIMULATE_VICTORVB               1
 
+#if 0  // unused and redundant
 #define SE_HELIACAL_LONG_SEARCH 	128
 #define SE_HELIACAL_HIGH_PRECISION 	256
 #define SE_HELIACAL_OPTICAL_PARAMS	512
@@ -418,24 +469,146 @@ extern "C" {
 #define SE_HELIACAL_AVKIND_MIN7 		(1 << 17)
 #define SE_HELIACAL_AVKIND_MIN9 		(1 << 18)
 #define SE_HELIACAL_AVKIND (SE_HELFLAG_AVKIND_VR|SE_HELFLAG_AVKIND_PTO|SE_HELFLAG_AVKIND_MIN7|SE_HELFLAG_AVKIND_MIN9)
+#endif
 
 #define SE_PHOTOPIC_FLAG		0
 #define SE_SCOTOPIC_FLAG		1
 #define SE_MIXEDOPIC_FLAG		2
 
-/*
- * by compiling with -DPAIR_SWEPH in the compiler options it
- * is possible to create a more compact version of SwissEph which
- * contains no code for the JPL ephemeris file and for the builtin
- * Moshier ephemeris.
- * This is quite useful for MSDOS real mode applications which need to
- * run within 640 kb.
- * The option is called PAIR_SWEPH because it was introduced for
- * Astrodienst's partner software PAIR.
+/* for swe_set_tid_acc() and ephemeris-dependent delta t:
+ * intrinsic tidal acceleration in the mean motion of the moon,
+ * not given in the parameters list of the ephemeris files but computed
+ * by Chapront/Chapront-Touzé/Francou A&A 387 (2002), p. 705.
  */
-#ifdef PAIR_SWEPH	
-# define NO_JPL
-#endif
+#define SE_TIDAL_DE200          (-23.8946)
+#define SE_TIDAL_DE403          (-25.580)  /* was (-25.8) until V. 1.76.2 */
+#define SE_TIDAL_DE404          (-25.580)  /* was (-25.8) until V. 1.76.2 */
+#define SE_TIDAL_DE405          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+#define SE_TIDAL_DE406          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+#define SE_TIDAL_DE421          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit */
+#define SE_TIDAL_DE422          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 (sic!) Lunar Orbit */
+#define SE_TIDAL_DE430          (-25.82)   /* JPL Interoffice Memorandum 9-jul-2013 on DE430 Lunar Orbit */
+#define SE_TIDAL_DE431          (-25.80)   /* IPN Progress Report 42-196 • February 15, 2014, p. 15; was (-25.82) in V. 2.00.00 */
+#define SE_TIDAL_DE441          (-25.936)   /* unpublished value, from email by Jon Giorgini to DK on 11 Apr 2021 */
+#define SE_TIDAL_26             (-26.0)
+#define SE_TIDAL_STEPHENSON_2016             (-25.85)
+#define SE_TIDAL_DEFAULT        SE_TIDAL_DE431
+#define SE_TIDAL_AUTOMATIC             999999
+#define SE_TIDAL_MOSEPH                SE_TIDAL_DE404
+#define SE_TIDAL_SWIEPH                SE_TIDAL_DEFAULT
+#define SE_TIDAL_JPLEPH                SE_TIDAL_DEFAULT
+
+/* for function swe_set_delta_t_userdef() */
+#define SE_DELTAT_AUTOMATIC             (-1E-10)
+
+#define SE_MODEL_DELTAT         0
+#define SE_MODEL_PREC_LONGTERM  1
+#define SE_MODEL_PREC_SHORTTERM 2
+#define SE_MODEL_NUT            3
+#define SE_MODEL_BIAS           4
+#define SE_MODEL_JPLHOR_MODE    5
+#define SE_MODEL_JPLHORA_MODE   6
+#define SE_MODEL_SIDT           7
+#define NSE_MODELS              8
+
+/* precession models */
+#define SEMOD_NPREC		11
+#define SEMOD_PREC_IAU_1976      1
+#define SEMOD_PREC_LASKAR_1986   2
+#define SEMOD_PREC_WILL_EPS_LASK 3
+#define SEMOD_PREC_WILLIAMS_1994 4
+#define SEMOD_PREC_SIMON_1994    5
+#define SEMOD_PREC_IAU_2000      6
+#define SEMOD_PREC_BRETAGNON_2003      7
+#define SEMOD_PREC_IAU_2006      8
+#define SEMOD_PREC_VONDRAK_2011  9
+#define SEMOD_PREC_OWEN_1990     10
+#define SEMOD_PREC_NEWCOMB       11
+#define SEMOD_PREC_DEFAULT       SEMOD_PREC_VONDRAK_2011
+/* SE versions before 1.70 used IAU 1976 precession for 
+ * a limited time range of 2 centuries in combination with 
+ * the long-term precession Simon 1994.
+ */
+#define SEMOD_PREC_DEFAULT_SHORT SEMOD_PREC_VONDRAK_2011
+
+/* nutation models */
+#define SEMOD_NNUT		5
+#define SEMOD_NUT_IAU_1980          1
+#define SEMOD_NUT_IAU_CORR_1987     2 /* Herring's (1987) corrections to IAU 1980 
+				    * nutation series. AA (1996) neglects them.*/
+#define SEMOD_NUT_IAU_2000A         3 /* very time consuming ! */
+#define SEMOD_NUT_IAU_2000B         4 /* fast, but precision of milli-arcsec */
+#define SEMOD_NUT_WOOLARD           5
+#define SEMOD_NUT_DEFAULT           SEMOD_NUT_IAU_2000B  /* fast, but precision of milli-arcsec */
+
+/* methods for sidereal time */
+#define SEMOD_NSIDT		4
+#define SEMOD_SIDT_IAU_1976         1
+#define SEMOD_SIDT_IAU_2006         2
+#define SEMOD_SIDT_IERS_CONV_2010   3
+#define SEMOD_SIDT_LONGTERM         4
+#define SEMOD_SIDT_DEFAULT          SEMOD_SIDT_LONGTERM
+//#define SEMOD_SIDT_DEFAULT          SEMOD_SIDT_IERS_CONV_2010
+
+/* frame bias methods */
+#define SEMOD_NBIAS		3
+#define SEMOD_BIAS_NONE             1  /* ignore frame bias */
+#define SEMOD_BIAS_IAU2000          2  /* use frame bias matrix IAU 2000 */
+#define SEMOD_BIAS_IAU2006          3  /* use frame bias matrix IAU 2006 */
+#define SEMOD_BIAS_DEFAULT          SEMOD_BIAS_IAU2006
+
+/* methods of JPL Horizons (iflag & SEFLG_JPLHOR), 
+ * using daily dpsi, deps;  see explanations below */
+#define SEMOD_NJPLHOR		2
+#define SEMOD_JPLHOR_LONG_AGREEMENT  1  /* daily dpsi and deps from file are 
+                                     * limited to 1962 - today. JPL uses the
+				     * first and last value for all  dates 
+				     * beyond this time range. */
+#define SEMOD_JPLHOR_DEFAULT        SEMOD_JPLHOR_LONG_AGREEMENT
+/* Note, currently this is the only option for SEMOD_JPLHOR..*/
+/* SEMOD_JPLHOR_LONG_AGREEMENT, if combined with SEFLG_JPLHOR provides good 
+ * agreement with JPL Horizons for 9998 BC (-9997) until 9999 CE. 
+ * - After 20-jan-1962 until today, Horizons uses correct dpsi and deps. 
+ * - For dates before that, it uses dpsi and deps of 20-jan-1962, which 
+ *   provides a continuous ephemeris, but does not make sense otherwise.
+ * - Before 1.1.1799 and after 1.1.2202, the precession model Owen 1990
+ *   is used, as in Horizons. 
+ * An agreement with Horizons to a couple of milli arc seconds is achieved 
+ * for the whole time range of Horizons. (BC 9998-Mar-20 to AD 9999-Dec-31 TT.)
+ */
+
+/* methods of approximation of JPL Horizons (iflag & SEFLG_JPLHORA), 
+ * without dpsi, deps; see explanations below */
+#define SEMOD_NJPLHORA		3
+#define SEMOD_JPLHORA_1     1
+#define SEMOD_JPLHORA_2     2
+#define SEMOD_JPLHORA_3     3
+#define SEMOD_JPLHORA_DEFAULT     SEMOD_JPLHORA_3
+/* With SEMOD_JPLHORA_1, planetary positions are always calculated 
+ * using a recent precession/nutation model. Frame bias matrix is applied 
+ * with some correction to RA and another correction added to epsilon.
+ * This provides a very good approximation of JPL Horizons positions. 
+ *
+ * With SEMOD_JPLHORA_2, frame bias as recommended by IERS Conventions 2003 
+ * and 2010 is *not* applied. Instead, dpsi_bias and deps_bias are added to 
+ * nutation. This procedure is found in some older astronomical software.
+ * Equatorial apparent positions will be close to JPL Horizons 
+ * (within a few mas) between 1962 and current years. Ecl. longitude 
+ * will be good, latitude bad. 
+ *
+ * With SEMOD_JPLHORA_3 works like SEMOD_JPLHORA_3 after 1962, but like
+ * SEFLG_JPLHOR before that. This allows EXTREMELY good agreement with JPL 
+ * Horizons over its whole time range.
+ */
+
+#define SEMOD_NDELTAT		5
+#define SEMOD_DELTAT_STEPHENSON_MORRISON_1984   1
+#define SEMOD_DELTAT_STEPHENSON_1997   2
+#define SEMOD_DELTAT_STEPHENSON_MORRISON_2004   3
+#define SEMOD_DELTAT_ESPENAK_MEEUS_2006   4
+#define SEMOD_DELTAT_STEPHENSON_ETC_2016   5
+//#define SEMOD_DELTAT_DEFAULT   SEMOD_DELTAT_ESPENAK_MEEUS_2006
+#define SEMOD_DELTAT_DEFAULT   SEMOD_DELTAT_STEPHENSON_ETC_2016
 
 /**************************************************************
  * here follow some ugly definitions which are only required
@@ -446,6 +619,9 @@ extern "C" {
  ************************************************************/
 #if defined(MAKE_DLL) || defined(USE_DLL) || defined(_WINDOWS)
 #  include <windows.h>
+extern HANDLE dllhandle;        // set by swedllst::DllMain, 
+				// defined in sweph.c
+				// used by GetModuleFilename in sweph.c
 #endif
 
 #ifdef USE_DLL
@@ -454,16 +630,10 @@ extern "C" {
 
 #if defined(DOS32) || !MSDOS || defined(WIN32)
 			/* use compiler switch to define DOS32 */
-#  ifndef FAR 
-#    define FAR
-#  endif
 #  define MALLOC malloc  
 #  define CALLOC calloc  
 #  define FREE free  
 #else
-#  ifndef FAR
-#    define FAR far
-#  endif
 #  ifdef __BORLANDC__
 #    include <alloc.h>
 #    define MALLOC farmalloc  
@@ -476,29 +646,28 @@ extern "C" {
 #  endif
 #endif
 
-/* DLL defines */
+/* DLL defines
+  Define UNDECO_DLL for un-decorated dll
+  verify compiler option __cdecl for un-decorated and __stdcall for decorated */
+/*#define UNDECO_DLL*/
 #ifdef MAKE_DLL
-  #if defined (PASCAL)
-    #define PASCAL_CONV PASCAL 
+  #if defined (PASCAL) || defined(__stdcall)
+   #if defined UNDECO_DLL
+    #define CALL_CONV __cdecl
+   #else
+    #define CALL_CONV __stdcall
+   #endif 
   #else
-    #define PASCAL_CONV 
+    #define CALL_CONV 
   #endif
-  #ifdef MAKE_DLL16 /* 16bit DLL */
-    /* We compiled the 16bit DLL for Windows 3.x using Borland C/C++ Ver:3.x
-       and the -WD or -WDE compiler switch. */
-    #define EXP16 __export 
-    #define EXP32 
-  #else /* 32bit DLL */
-    /* To export symbols in the new DLL model of Win32, Microsoft 
-       recommends the following approach */ 
-    #define EXP16 
-    #define EXP32  __declspec( dllexport )
-  #endif
+  /* To export symbols in the new DLL model of Win32, Microsoft 
+     recommends the following approach */ 
+  #define EXP32  __declspec( dllexport )
 #else 
-  #define PASCAL_CONV 
-  #define EXP16 
+  #define CALL_CONV 
   #define EXP32 
 #endif  
+
 
 #ifndef _SWEDLL_H
 
@@ -506,21 +675,28 @@ extern "C" {
  * exported functions
  ***********************************************************/
 
-#define ext_def(x)	extern EXP32 x FAR PASCAL_CONV EXP16
+#define ext_def(x)	extern EXP32 x CALL_CONV 
 			/* ext_def(x) evaluates to x on Unix */
 
 ext_def(int32) swe_heliacal_ut(double tjdstart_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 iflag, double *dret, char *serr);
 ext_def(int32) swe_heliacal_pheno_ut(double tjd_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 helflag, double *darr, char *serr);
 ext_def(int32) swe_vis_limit_mag(double tjdut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 helflag, double *dret, char *serr);
+
 /* the following are secret, for Victor Reijs' */
 ext_def(int32) swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
 ext_def(int32) swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
+
+/* the following is secret, for Dieter, allows to test old models of
+ * precession, nutation, etc. Search for SE_MODEL_... in this file */
+ext_def(void) swe_set_astro_models(char *samod, int32 iflag);
+ext_def(void) swe_get_astro_models(char *samod, char *sdet, int32 iflag);
 
 /**************************** 
  * exports from sweph.c 
  ****************************/
 
 ext_def(char *) swe_version(char *);
+ext_def(char *) swe_get_library_path(char *);
 
 /* planets, moon, nodes etc. */
 ext_def( int32 ) swe_calc(
@@ -530,6 +706,17 @@ ext_def( int32 ) swe_calc(
 
 ext_def(int32) swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag, 
 	double *xx, char *serr);
+
+ext_def(int32) swe_calc_pctr(double tjd, int32 ipl, int32 iplctr, int32 iflag, double *xxret, char *serr);
+
+ext_def(double) swe_solcross(double x2cross, double jd_et, int32 flag, char *serr);
+ext_def(double) swe_solcross_ut(double x2cross, double jd_ut, int32 flag, char *serr);
+ext_def(double) swe_mooncross(double x2cross, double jd_et, int32 flag, char *serr);
+ext_def(double) swe_mooncross_ut(double x2cross, double jd_ut, int32 flag, char *serr);
+ext_def(double) swe_mooncross_node(double jd_et, int32 flag, double *xlon, double *xlat, char *serr);
+ext_def(double) swe_mooncross_node_ut(double jd_ut, int32 flag, double *xlon, double *xlat, char *serr);
+ext_def(int32) swe_helio_cross(int32 ipl, double x2cross, double jd_et, int32 iflag, int32 dir, double *jd_cross, char *serr);
+ext_def(int32) swe_helio_cross_ut(int32 ipl, double x2cross, double jd_ut, int32 iflag, int32 dir, double *jd_cross, char *serr);
 
 /* fixed stars */
 ext_def( int32 ) swe_fixstar(
@@ -542,14 +729,24 @@ ext_def(int32) swe_fixstar_ut(char *star, double tjd_ut, int32 iflag,
 
 ext_def(int32) swe_fixstar_mag(char *star, double *mag, char *serr);
 
+ext_def( int32 ) swe_fixstar2(
+        char *star, double tjd, int32 iflag, 
+        double *xx,
+        char *serr);
+
+ext_def(int32) swe_fixstar2_ut(char *star, double tjd_ut, int32 iflag, 
+	double *xx, char *serr);
+
+ext_def(int32) swe_fixstar2_mag(char *star, double *mag, char *serr);
+
 /* close Swiss Ephemeris */
 ext_def( void ) swe_close(void);
 
 /* set directory path of ephemeris files */
-ext_def( void ) swe_set_ephe_path(char *path);
+ext_def( void ) swe_set_ephe_path(const char *path);
 
 /* set file name of JPL file */
-ext_def( void ) swe_set_jpl_file(char *fname);
+ext_def( void ) swe_set_jpl_file(const char *fname);
 
 /* get planet name */
 ext_def( char *) swe_get_planet_name(int ipl, char *spname);
@@ -561,11 +758,16 @@ ext_def (void) swe_set_topo(double geolon, double geolat, double geoalt);
 ext_def(void) swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0);
 
 /* get ayanamsa */
+ext_def(int32) swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr);
+ext_def(int32) swe_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *serr);
 ext_def(double) swe_get_ayanamsa(double tjd_et);
-
 ext_def(double) swe_get_ayanamsa_ut(double tjd_ut);
 
-ext_def( char *) swe_get_ayanamsa_name(int32 isidmode);
+
+ext_def(const char *) swe_get_ayanamsa_name(int32 isidmode);
+ext_def(const char *) swe_get_current_file_data(int ifno, double *tfstart, double *tfend, int *denum);
+
+/*ext_def(void) swe_set_timeout(int32 tsec);*/
 
 /**************************** 
  * exports from swedate.c 
@@ -620,14 +822,22 @@ ext_def( int ) swe_houses_ex(
         double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
 	double *cusps, double *ascmc);
 
+ext_def( int ) swe_houses_ex2(
+        double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
+	double *cusps, double *ascmc, double *cusp_speed, double *ascmc_speed, char *serr);
+
 ext_def( int ) swe_houses_armc(
         double armc, double geolat, double eps, int hsys, 
 	double *cusps, double *ascmc);
 
+ext_def( int ) swe_houses_armc_ex2(
+        double armc, double geolat, double eps, int hsys, 
+	double *cusps, double *ascmc, double *cusp_speed, double *ascmc_speed, char *serr);
+
 ext_def(double) swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr);
 
-ext_def(char *) swe_house_name(int hsys);
+ext_def(const char *) swe_house_name(int hsys);
 
 
 
@@ -729,7 +939,10 @@ ext_def (int32) swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
                       char *serr);
+ext_def (int32) swe_get_orbital_elements(
+  double tjd_et, int32 ipl, int32 iflag, double *dret, char *serr);
 
+ext_def (int32) swe_orbit_max_min_true_distance(double tjd_et, int32 ipl, int32 iflag, double *dmax, double *dmin, double *dtrue, char *serr);
 
 /**************************** 
  * exports from swephlib.c 
@@ -737,6 +950,7 @@ ext_def (int32) swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
 
 /* delta t */
 ext_def( double ) swe_deltat(double tjd);
+ext_def(double) swe_deltat_ex(double tjd, int32 iflag, char *serr);
 
 /* equation of time */
 ext_def(int32) swe_time_equ(double tjd, double *te, char *serr);
@@ -746,6 +960,7 @@ ext_def(int32) swe_lat_to_lmt(double tjd_lat, double geolon, double *tjd_lmt, ch
 /* sidereal time */
 ext_def( double ) swe_sidtime0(double tjd_ut, double eps, double nut);
 ext_def( double ) swe_sidtime(double tjd_ut);
+ext_def( void ) swe_set_interpolate_nut(AS_BOOL do_interpolate);
 
 /* coordinate transformation polar -> polar */
 ext_def( void ) swe_cotrans(double *xpo, double *xpn, double eps);
@@ -754,6 +969,10 @@ ext_def( void ) swe_cotrans_sp(double *xpo, double *xpn, double eps);
 /* tidal acceleration to be used in swe_deltat() */
 ext_def( double ) swe_get_tid_acc(void);
 ext_def( void ) swe_set_tid_acc(double t_acc);
+
+/* set a user defined delta t to be returned by functions
+ * swe_deltat() and swe_deltat_ex() */
+ext_def (void) swe_set_delta_t_userdef(double dt);
 
 ext_def( double ) swe_degnorm(double x);
 ext_def( double ) swe_radnorm(double x);

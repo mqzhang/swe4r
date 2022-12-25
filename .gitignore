@@ -1,4 +1,5 @@
 *.o
+*.a
 *.bundle
 *.gem
 *.tmproj
