@@ -94,17 +94,15 @@ static VALUE t_swe_calc_ut(VALUE self, VALUE julian_ut, VALUE body, VALUE iflag)
 {
 	double results[6];
 	char serr[AS_MAXCH];
-	VALUE arr = rb_ary_new();
-	int id_push = rb_intern("push");
-	int i = 0;
 
 	if (swe_calc_ut(NUM2DBL(julian_ut), NUM2INT(body), NUM2LONG(iflag), results, serr) < 0)
 		rb_raise(rb_eRuntimeError, serr);
 
-	for (i = 0; i < 6; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(results[i]));
+	VALUE output = rb_ary_new();
+	for (int i = 0; i < 6; i++)
+		rb_ary_push(output, rb_float_new(results[i]));
 
-	return arr;
+	return output;
 }
 
 /*
@@ -151,12 +149,9 @@ static VALUE t_swe_get_ayanamsa_ut(VALUE self, VALUE julian_ut)
 
 static VALUE t_swe_get_ayanamsa_ex_ut(VALUE self, VALUE julian_ut, VALUE flag )
 {
-	double *ayanamsha;
+	double ayanamsha;
 	char serr[AS_MAXCH];
 
-	VALUE arr = rb_ary_new();
-	int id_push = rb_intern("push");
-	int i = 0;
 	if(flag == Qnil) { // default to Moshier Ephemeris
 		flag = SEFLG_MOSEPH;
 	}
@@ -164,7 +159,7 @@ static VALUE t_swe_get_ayanamsa_ex_ut(VALUE self, VALUE julian_ut, VALUE flag )
 	if (swe_get_ayanamsa_ex_ut(NUM2DBL(julian_ut), NUM2INT(flag), &ayanamsha, serr) < 0)
 		rb_raise(rb_eRuntimeError, serr);
 
-	return rb_float_new(*ayanamsha);
+	return rb_float_new(ayanamsha);
 }
 
 
@@ -202,20 +197,22 @@ static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE lo
 	double cusps[13];
 	double ascmc[10];
 	char serr[AS_MAXCH];
-	VALUE arr = rb_ary_new();
-	int id_push = rb_intern("push");
-	int i = 0;
 
 	if (swe_houses(NUM2DBL(julian_day), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc) < 0)
 		rb_raise(rb_eRuntimeError, serr);
 
-	for (i = 0; i < 13; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(cusps[i]));
+	VALUE _cusps = rb_ary_new();
+	for (int i = 0; i < 13; i++)
+		rb_ary_push(_cusps, rb_float_new(cusps[i]));
 
-	for (i = 0; i < 10; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(ascmc[i]));
+	VALUE _ascmc = rb_ary_new();
+	for (int i = 0; i < 10; i++)
+		rb_ary_push(_ascmc, rb_float_new(ascmc[i]));
 
-	return arr;
+	VALUE output = rb_ary_new();
+	rb_ary_push(output, _cusps);
+	rb_ary_push(output, _ascmc);
+	return output;
 }
 
 // This function is better than swe_houses and returns speeds as well
@@ -245,29 +242,35 @@ static VALUE t_swe_houses_ex2(VALUE self, VALUE julian_day, VALUE flag, VALUE la
 	double ascmc_speed[10];
 	char serr[AS_MAXCH];
 
-	VALUE arr = rb_ary_new();
-	int id_push = rb_intern("push");
-	int i = 0;
-
 	if (swe_houses_ex2(NUM2DBL(julian_day), NUM2INT(flag), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc, cusps_speed, ascmc_speed, serr) < 0)
 		rb_raise(rb_eRuntimeError, serr);
 
-	for (i = 0; i < 13; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(cusps[i]));
 
-	for (i = 0; i < 10; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(ascmc[i]));
+	VALUE _cusps = rb_ary_new();
+	for (int i = 0; i < 13; i++)
+		rb_ary_push(_cusps, rb_float_new(cusps[i]));
 
-	for (i = 0; i < 13; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(cusps_speed[i]));
+	VALUE _ascmc = rb_ary_new();
+	for (int i = 0; i < 10; i++)
+		rb_ary_push(_ascmc, rb_float_new(ascmc[i]));
 
-	for (i = 0; i < 10; i++)
-		rb_funcall(arr, id_push, 1, rb_float_new(ascmc_speed[i]));
+	VALUE _cusps_speed = rb_ary_new();
+	for (int i = 0; i < 13; i++)
+		rb_ary_push(_cusps_speed, rb_float_new(cusps_speed[i]));
 
-	return arr;
+	VALUE _ascmc_speed = rb_ary_new();
+	for (int i = 0; i < 10; i++)
+		rb_ary_push(_ascmc_speed, rb_float_new(ascmc_speed[i]));
+
+	VALUE output = rb_ary_new();
+	rb_ary_push(output, _cusps);
+	rb_ary_push(output, _ascmc);
+	rb_ary_push(output, _cusps_speed);
+	rb_ary_push(output, _ascmc_speed);
+	return output;
 }
 
-/* TODO: bind swe_house_pos() */
+/* TODO: bind swe_house_pos(), what is an ARMC?? */
 
 void Init_swe4r()
 {
