@@ -136,6 +136,38 @@ static VALUE t_swe_get_ayanamsa_ut(VALUE self, VALUE julian_ut)
 	return rb_float_new(ayanamsa);
 }
 
+
+// * This function computes the ayanamsha using a Delta T consistent with the ephe_flag specified.
+// * https://www.astro.com/swisseph/swephprg.htm#_Toc112949018
+// * input variables:
+// * tjd_ut = Julian day number in UT
+// * (tjd_et = Julian day number in ET/TT)
+// * iflag = ephemeris flag (one of SEFLG_SWIEPH, SEFLG_JPLEPH, SEFLG_MOSEPH)
+// * plus some other optional SEFLG_...
+// * output values
+// * daya = ayanamsha value (pointer to double)
+// * serr = error message or warning (pointer to string)
+// * The function returns either the ephemeris flag used or ERR (-1)
+
+static VALUE t_swe_get_ayanamsa_ex_ut(VALUE self, VALUE julian_ut, VALUE flag )
+{
+	double *ayanamsha;
+	char serr[AS_MAXCH];
+
+	VALUE arr = rb_ary_new();
+	int id_push = rb_intern("push");
+	int i = 0;
+	if(flag == Qnil) { // default to Moshier Ephemeris
+		flag = SEFLG_MOSEPH;
+	}
+
+	if (swe_get_ayanamsa_ex_ut(NUM2DBL(julian_ut), NUM2INT(flag), &ayanamsha, serr) < 0)
+		rb_raise(rb_eRuntimeError, serr);
+
+	return rb_float_new(*ayanamsha);
+}
+
+
 /*
  * This function computes house cusps, ascendant, midheaven, etc
  * http://www.astro.com/swisseph/swephprg.htm#_Toc283735486
@@ -186,6 +218,7 @@ static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE lo
 	return arr;
 }
 
+// This function is better than swe_houses and returns speeds as well
 // https://www.astro.com/swisseph/swephprg.htm#_Toc112949026
 // int swe_houses_ex2(
 // double tjd_ut,      /* Julian day number, UT */
@@ -204,7 +237,7 @@ static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE lo
 // char *serr);       
 
 
-static VALUE t_swe_houses_ex2(VALUE self, VALUE flag, VALUE julian_day, VALUE latitude, VALUE longitude, VALUE house_system)
+static VALUE t_swe_houses_ex2(VALUE self, VALUE julian_day, VALUE flag, VALUE latitude, VALUE longitude, VALUE house_system)
 {
 	double cusps[13];
 	double ascmc[10];
@@ -216,7 +249,7 @@ static VALUE t_swe_houses_ex2(VALUE self, VALUE flag, VALUE julian_day, VALUE la
 	int id_push = rb_intern("push");
 	int i = 0;
 
-	if (swe_houses_ex2(NUM2DBL(julian_day), NUM2INT(flag), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc) < 0)
+	if (swe_houses_ex2(NUM2DBL(julian_day), NUM2INT(flag), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc, cusps_speed, ascmc_speed, serr) < 0)
 		rb_raise(rb_eRuntimeError, serr);
 
 	for (i = 0; i < 13; i++)
@@ -234,13 +267,6 @@ static VALUE t_swe_houses_ex2(VALUE self, VALUE flag, VALUE julian_day, VALUE la
 	return arr;
 }
 
-// TODO: bind swe_get_ayanamsa_ex_ut
-    // int32 swe_get_ayanamsa_ex_ut(
-    //   double tjd_ut,      /* Julian day number in UT */
-    //   int32 ephe_flag,    /* ephemeris flag, one of SEFLG_SWIEPH, SEFLG_JPLEPH, SEFLG_MOSEPH */
-    //   double *daya,       /* output: ayanamsha value (pointer to double) */
-    //   char *serr);        /* output: error message or warning (pointer to string) */
-
 /* TODO: bind swe_house_pos() */
 
 void Init_swe4r()
@@ -257,8 +283,11 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_set_sid_mode", t_swe_set_sid_mode, 3);
 	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ut", t_swe_get_ayanamsa_ut, 1);
 	rb_define_module_function(rb_mSwe4r, "swe_houses", t_swe_houses, 4);
+	rb_define_module_function(rb_mSwe4r, "swe_houses_ex2", t_swe_houses_ex2, 5);
+	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ex_ut", t_swe_get_ayanamsa_ex_ut, 4);
 
 	// Constants
+
 	rb_define_const(rb_mSwe4r, "SE_SUN", INT2FIX(SE_SUN));
 	rb_define_const(rb_mSwe4r, "SE_MOON", INT2FIX(SE_MOON));
 	rb_define_const(rb_mSwe4r, "SE_MERCURY", INT2FIX(SE_MERCURY));
