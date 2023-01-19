@@ -164,6 +164,7 @@ static VALUE t_swe_get_ayanamsa_ut(VALUE self, VALUE julian_ut)
  * ‘U’     		= Krusinski-Pisa
  * ‘G’     		= Gauquelin sectors
  */
+
 static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE longitude, VALUE house_system)
 {
 	double cusps[13];
@@ -184,6 +185,61 @@ static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE lo
 
 	return arr;
 }
+
+// https://www.astro.com/swisseph/swephprg.htm#_Toc112949026
+// int swe_houses_ex2(
+// double tjd_ut,      /* Julian day number, UT */
+// int32 iflag,        /* 0 or SEFLG_SIDEREAL or SEFLG_RADIANS or SEFLG_NONUT */
+// double geolat,      /* geographic latitude, in degrees */
+// double geolon,      /* geographic longitude, in degrees
+//                     * eastern longitude is positive,
+//                     * western longitude is negative,
+//                     * northern latitude is positive,
+//                     * southern latitude is negative */
+// int hsys,           /* house method, one-letter case sensitive code (list, see further below) */
+// double *cusps,      /* array for 13 (or 37 for hsys G) doubles, explained further below */
+// double *ascmc,      /* array for 10 doubles, explained further below */
+// double *cusp_speed,  /* like cusps */
+// double *ascmc_speed, /* like ascmc */
+// char *serr);       
+
+
+static VALUE t_swe_houses_ex2(VALUE self, VALUE flag, VALUE julian_day, VALUE latitude, VALUE longitude, VALUE house_system)
+{
+	double cusps[13];
+	double ascmc[10];
+	double cusps_speed[13];
+	double ascmc_speed[10];
+	char serr[AS_MAXCH];
+
+	VALUE arr = rb_ary_new();
+	int id_push = rb_intern("push");
+	int i = 0;
+
+	if (swe_houses_ex2(NUM2DBL(julian_day), NUM2INT(flag), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc) < 0)
+		rb_raise(rb_eRuntimeError, serr);
+
+	for (i = 0; i < 13; i++)
+		rb_funcall(arr, id_push, 1, rb_float_new(cusps[i]));
+
+	for (i = 0; i < 10; i++)
+		rb_funcall(arr, id_push, 1, rb_float_new(ascmc[i]));
+
+	for (i = 0; i < 13; i++)
+		rb_funcall(arr, id_push, 1, rb_float_new(cusps_speed[i]));
+
+	for (i = 0; i < 10; i++)
+		rb_funcall(arr, id_push, 1, rb_float_new(ascmc_speed[i]));
+
+	return arr;
+}
+
+// TODO: bind swe_get_ayanamsa_ex_ut
+    // int32 swe_get_ayanamsa_ex_ut(
+    //   double tjd_ut,      /* Julian day number in UT */
+    //   int32 ephe_flag,    /* ephemeris flag, one of SEFLG_SWIEPH, SEFLG_JPLEPH, SEFLG_MOSEPH */
+    //   double *daya,       /* output: ayanamsha value (pointer to double) */
+    //   char *serr);        /* output: error message or warning (pointer to string) */
 
 /* TODO: bind swe_house_pos() */
 
