@@ -152,9 +152,9 @@ static VALUE t_swe_get_ayanamsa_ex_ut(VALUE self, VALUE julian_ut, VALUE flag )
 	double ayanamsha;
 	char serr[AS_MAXCH];
 
-	if(flag == Qnil) { // default to Moshier Ephemeris
-		flag = SEFLG_MOSEPH;
-	}
+	// if(TYPE(flag) == T_NIL) { // default to Moshier Ephemeris
+	// 	flag = SEFLG_MOSEPH;
+	// }
 
 	if (swe_get_ayanamsa_ex_ut(NUM2DBL(julian_ut), NUM2INT(flag), &ayanamsha, serr) < 0)
 		rb_raise(rb_eRuntimeError, serr);
@@ -287,7 +287,7 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ut", t_swe_get_ayanamsa_ut, 1);
 	rb_define_module_function(rb_mSwe4r, "swe_houses", t_swe_houses, 4);
 	rb_define_module_function(rb_mSwe4r, "swe_houses_ex2", t_swe_houses_ex2, 5);
-	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ex_ut", t_swe_get_ayanamsa_ex_ut, 4);
+	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ex_ut", t_swe_get_ayanamsa_ex_ut, 2);
 
 	// Constants
 

@@ -36,6 +36,11 @@ class Swe4rTest < Test::Unit::TestCase
     
   end
   
+  def test_swe_get_ayanamsa_ex_ut
+    Swe4r::swe_set_sid_mode(Swe4r::SE_SIDM_LAHIRI, 0, 0)
+    assert_equal(23.59667507149339, Swe4r::swe_get_ayanamsa_ex_ut(2444838.972916667, Swe4r::SEFLG_MOSEPH))
+  end
+
   def test_swe_calc_ut
     
     # The Moshier Ephemeris will be used for all tests since it does not require ephemeris files
