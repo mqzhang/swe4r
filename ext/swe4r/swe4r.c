@@ -1,6 +1,7 @@
 /*
 Swe4r :: Swiss Ephemeris for Ruby - A C extension for the Swiss Ephemeris library (http://www.astro.com/swisseph/)
 Copyright (C) 2012 Andrew Kirk (andrew.kirk@windhorsemedia.com)
+Additional work (C) 2023 David Lowenfels (dfl@alum.mit.edu)
 
 This file is part of Swe4r.
 
@@ -18,8 +19,10 @@ You should have received a copy of the GNU General Public License
 along with Swe4r.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ruby.h"
+
+// https://docs.ruby-lang.org/en/3.0/extension_rdoc.html#include "ruby.h"
 #include "swephexp.h"
+
 
 // Module Name
 VALUE rb_mSwe4r = Qnil;
