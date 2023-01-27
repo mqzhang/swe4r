@@ -10,6 +10,10 @@ class Swe4rTest < Test::Unit::TestCase
   def test_swe_julday
     assert_equal(2444838.972916667, Swe4r::swe_julday(1981, 8, 22, 11.35))
   end
+
+  def test_swe_revjul
+    assert_equal( [1981, 8, 22, 11.350000005215406], Swe4r::swe_revjul(2444838.972916667) )
+  end
   
   def test_swe_set_topo
     assert_equal(nil, Swe4r::swe_set_topo(-112.183333, 45.45, 1524))

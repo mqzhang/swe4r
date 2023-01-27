@@ -85,7 +85,7 @@ static VALUE t_swe_julday(int argc, VALUE *argv, VALUE self) {
 	);
 */
 static VALUE t_swe_revjul(int argc, VALUE *argv, VALUE self) {
-	if (argc > 3 || argc < 2)
+	if (argc > 2 || argc < 1)
 	{ // there should only be 2 or 3 arguments
 		rb_raise(rb_eArgError, "wrong number of arguments");
 	}
