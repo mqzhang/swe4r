@@ -20,9 +20,9 @@ along with Swe4r.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-// https://docs.ruby-lang.org/en/3.0/extension_rdoc.html#include "ruby.h"
+// https://docs.ruby-lang.org/en/3.0/extension_rdoc.html
+#include <ruby.h> 
 #include "swephexp.h"
-
 
 // Module Name
 VALUE rb_mSwe4r = Qnil;
