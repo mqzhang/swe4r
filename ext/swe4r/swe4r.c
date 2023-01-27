@@ -286,11 +286,11 @@ static VALUE t_swe_houses_ex2(VALUE self, VALUE julian_day, VALUE flag, VALUE la
 // double *tret,            /* return address (double) for rise time etc. */
 // char *serr);             /* return address for error message */
 
-static VALUE t_swe_rise_trans(VALUE self, VALUE julian_day, VALUE body, VALUE flag, VALUE rmsi, VALUE lat, VALUE lon, VALUE height, VALUE pressure, VALUE temp)
+static VALUE t_swe_rise_trans(VALUE self, VALUE julian_day, VALUE body, VALUE flag, VALUE rmsi, VALUE lon, VALUE lat, VALUE height, VALUE pressure, VALUE temp)
 {
 	double geopos[3];
-	geopos[0] = NUM2DBL(lat);
-	geopos[1] = NUM2DBL(lon);
+	geopos[0] = NUM2DBL(lon);
+	geopos[1] = NUM2DBL(lat);
 	geopos[2] = NUM2DBL(height);
 	int ipl;
 	char *starname;
@@ -323,11 +323,11 @@ static VALUE t_swe_rise_trans(VALUE self, VALUE julian_day, VALUE body, VALUE fl
 // double *tret,       /* return address (double) for rise time etc. */
 // char *serr);        /* return address for error message */
 
-static VALUE t_swe_rise_trans_true_hor(VALUE self, VALUE julian_day, VALUE body, VALUE flag, VALUE rmsi, VALUE lat, VALUE lon, VALUE height, VALUE pressure, VALUE temp, VALUE hor_height)
+static VALUE t_swe_rise_trans_true_hor(VALUE self, VALUE julian_day, VALUE body, VALUE flag, VALUE rmsi, VALUE lon, VALUE lat, VALUE height, VALUE pressure, VALUE temp, VALUE hor_height)
 {
 	double geopos[3];
-	geopos[0] = NUM2DBL(lat);
-	geopos[1] = NUM2DBL(lon);
+	geopos[0] = NUM2DBL(lon);
+	geopos[1] = NUM2DBL(lat);
 	geopos[2] = NUM2DBL(height);
 	int ipl;
 	char *starname;
