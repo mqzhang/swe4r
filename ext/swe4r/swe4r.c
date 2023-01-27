@@ -60,10 +60,48 @@ static VALUE t_swe_set_jpl_file(VALUE self, VALUE path)
 		int gregflag	// Gregorian calendar: 1, Julian calendar: 0
 	);
  */
-static VALUE t_swe_julday(VALUE self, VALUE year, VALUE month, VALUE day, VALUE hour)
-{
-	double julday = swe_julday(NUM2INT(year), NUM2INT(month), NUM2INT(day), NUM2DBL(hour), SE_GREG_CAL);
+static VALUE t_swe_julday(int argc, VALUE *argv, VALUE self) {
+	VALUE greg_flag;
+
+	if (argc > 5 || argc < 4)
+	{ // there should only be 4 or 5 arguments
+		rb_raise(rb_eArgError, "wrong number of arguments");
+	}
+	greg_flag = (argc == 5) ? NUM2INT(argv[4]) : SE_GREG_CAL;
+
+	double julday = swe_julday(NUM2INT(argv[0]), NUM2INT(argv[1]), NUM2INT(argv[2]), NUM2DBL(argv[3]), greg_flag );
 	return rb_float_new(julday);
+}
+/*
+ * Get the year, month, day, hour from Julian day
+ * http://www.astro.com/swisseph/swephprg.htm#_Toc283735468
+	void swe_revjul(
+		double tjd,         	 // Julian day number
+		int gregflag,            // Gregorian calendar: 1, Julian calendar: 0
+		int *year,               // target addresses for year, etc.
+		int *month,
+		int *day,
+		double *hour
+	);
+*/
+static VALUE t_swe_revjul(int argc, VALUE *argv, VALUE self) {
+	if (argc > 3 || argc < 2)
+	{ // there should only be 2 or 3 arguments
+		rb_raise(rb_eArgError, "wrong number of arguments");
+	}
+	VALUE greg_flag = (argc == 2) ? NUM2INT(argv[1]) : SE_GREG_CAL;
+
+	int year, month, day;
+	double hour;
+
+	swe_revjul(NUM2DBL(argv[0]), greg_flag, &year, &month, &day, &hour);
+
+	VALUE output = rb_ary_new();
+	rb_ary_push(output, rb_uint_new(year));
+	rb_ary_push(output, rb_uint_new(month));
+	rb_ary_push(output, rb_uint_new(day));
+	rb_ary_push(output, rb_float_new(hour));
+	return output;
 }
 
 /*
@@ -356,7 +394,8 @@ void Init_swe4r()
 	// Module Functions
 	rb_define_module_function(rb_mSwe4r, "swe_set_ephe_path", t_swe_set_ephe_path, 1);
 	rb_define_module_function(rb_mSwe4r, "swe_set_jpl_file", t_swe_set_jpl_file, 1);
-	rb_define_module_function(rb_mSwe4r, "swe_julday", t_swe_julday, 4);
+	rb_define_module_function(rb_mSwe4r, "swe_julday", t_swe_julday, -1);
+	rb_define_module_function(rb_mSwe4r, "swe_revjul", t_swe_revjul, -1);
 	rb_define_module_function(rb_mSwe4r, "swe_set_topo", t_swe_set_topo, 3);
 	rb_define_module_function(rb_mSwe4r, "swe_calc_ut", t_swe_calc_ut, 3);
 	rb_define_module_function(rb_mSwe4r, "swe_set_sid_mode", t_swe_set_sid_mode, 3);
@@ -443,6 +482,9 @@ void Init_swe4r()
 	rb_define_const(rb_mSwe4r, "SE_SIDM_J1900", INT2FIX(SE_SIDM_J1900));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_B1950", INT2FIX(SE_SIDM_B1950));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_USER", INT2FIX(SE_SIDM_USER));
+
+	rb_define_const(rb_mSwe4r, "SE_GREG_CAL", INT2FIX(SE_GREG_CAL));
+	rb_define_const(rb_mSwe4r, "SE_JUL_CAL", INT2FIX(SE_JUL_CAL));
 
 	rb_define_const(rb_mSwe4r, "SE_CALC_RISE", INT2FIX(SE_CALC_RISE));
 	rb_define_const(rb_mSwe4r, "SE_CALC_SET", INT2FIX(SE_CALC_SET));
