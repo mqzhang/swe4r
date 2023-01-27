@@ -270,6 +270,79 @@ static VALUE t_swe_houses_ex2(VALUE self, VALUE julian_day, VALUE flag, VALUE la
 	return output;
 }
 
+// int32 swe_rise_trans(
+// double tjd_ut,      /* search after this time (UT) */
+// int32 ipl,               /* planet number, if planet or moon */
+// char *starname,     /* star name, if star; must be NULL or empty, if ipl is used */
+// int32 epheflag,     /* ephemeris flag */
+// int32 rsmi,              /* integer specifying that rise, set, or one of the two meridian transits is wanted. see definition below */
+// double *geopos,     /* array of three doubles containing
+//                         * geograph. long., lat., height of observer */
+// double atpress      /* atmospheric pressure in mbar/hPa */
+// double attemp,      /* atmospheric temperature in deg. C */
+// double *tret,            /* return address (double) for rise time etc. */
+// char *serr);             /* return address for error message */
+
+static VALUE t_swe_rise_trans(VALUE self, VALUE julian_day, VALUE body, VALUE flag, VALUE rmsi, VALUE lat, VALUE lon, VALUE height, VALUE pressure, VALUE temp)
+{
+	double geopos[3];
+	geopos[0] = NUM2DBL(lat);
+	geopos[1] = NUM2DBL(lon);
+	geopos[2] = NUM2DBL(height);
+	int ipl;
+	char *starname;
+	if( TYPE(body) == T_STRING ) {
+		starname = StringValuePtr(body);
+		ipl = 0;
+	} else {
+		ipl = NUM2INT(body);
+		starname = NULL;
+	}
+	char serr[AS_MAXCH];
+	double retval;
+
+	if (swe_rise_trans(NUM2DBL(julian_day), ipl, starname, NUM2INT(flag), NUM2INT(rmsi), geopos, NUM2DBL(pressure), NUM2DBL(temp), &retval, serr) < 0)
+		rb_raise(rb_eRuntimeError, serr);
+	return rb_float_new(retval);
+}
+
+// int32 swe_rise_trans_true_hor(
+// double tjd_ut,      /* search after this time (UT) */
+// int32 ipl,               /* planet number, if planet or moon */
+// char *starname,     /* star name, if star; must be NULL or empty, if ipl is used */
+// int32 epheflag,     /* ephemeris flag */
+// int32 rsmi,              /* integer specifying that rise, set, or one of the two meridian transits is wanted. see definition below */
+// double *geopos,     /* array of three doubles containing
+//                         * geograph. long., lat., height of observer */
+// double atpress,     /* atmospheric pressure in mbar/hPa */
+// double attemp,      /* atmospheric temperature in deg. C */
+// double horhgt,      /* height of local horizon in deg at the point where the body rises or sets */
+// double *tret,       /* return address (double) for rise time etc. */
+// char *serr);        /* return address for error message */
+
+static VALUE t_swe_rise_trans_true_hor(VALUE self, VALUE julian_day, VALUE body, VALUE flag, VALUE rmsi, VALUE lat, VALUE lon, VALUE height, VALUE pressure, VALUE temp, VALUE hor_height)
+{
+	double geopos[3];
+	geopos[0] = NUM2DBL(lat);
+	geopos[1] = NUM2DBL(lon);
+	geopos[2] = NUM2DBL(height);
+	int ipl;
+	char *starname;
+	if( TYPE(body) == T_STRING ) {
+		starname = StringValuePtr(body);
+		ipl = 0;
+	} else {
+		ipl = NUM2INT(body);
+		starname = NULL;
+	}
+	char serr[AS_MAXCH];
+	double retval;
+
+	if (swe_rise_trans_true_hor(NUM2DBL(julian_day), ipl, starname, NUM2INT(flag), NUM2INT(rmsi), geopos, NUM2DBL(pressure), NUM2DBL(temp), NUM2DBL(hor_height), &retval, serr) < 0)
+		rb_raise(rb_eRuntimeError, serr);
+	return rb_float_new(retval);
+}
+
 /* TODO: bind swe_house_pos(), what is an ARMC?? */
 
 void Init_swe4r()
@@ -288,6 +361,8 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_houses", t_swe_houses, 4);
 	rb_define_module_function(rb_mSwe4r, "swe_houses_ex2", t_swe_houses_ex2, 5);
 	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ex_ut", t_swe_get_ayanamsa_ex_ut, 2);
+	rb_define_module_function(rb_mSwe4r, "swe_rise_trans", t_swe_rise_trans, 9);
+	rb_define_module_function(rb_mSwe4r, "swe_rise_trans_true_hor", t_swe_rise_trans_true_hor, 10);
 
 	// Constants
 
@@ -365,4 +440,18 @@ void Init_swe4r()
 	rb_define_const(rb_mSwe4r, "SE_SIDM_J1900", INT2FIX(SE_SIDM_J1900));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_B1950", INT2FIX(SE_SIDM_B1950));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_USER", INT2FIX(SE_SIDM_USER));
+
+	rb_define_const(rb_mSwe4r, "SE_CALC_RISE", INT2FIX(SE_CALC_RISE));
+	rb_define_const(rb_mSwe4r, "SE_CALC_SET", INT2FIX(SE_CALC_SET));
+	rb_define_const(rb_mSwe4r, "SE_CALC_MTRANSIT", INT2FIX(SE_CALC_MTRANSIT));
+	rb_define_const(rb_mSwe4r, "SE_CALC_ITRANSIT", INT2FIX(SE_CALC_ITRANSIT));
+	rb_define_const(rb_mSwe4r, "SE_BIT_DISC_CENTER", INT2FIX(SE_BIT_DISC_CENTER));
+	rb_define_const(rb_mSwe4r, "SE_BIT_DISC_BOTTOM", INT2FIX(SE_BIT_DISC_BOTTOM));
+	rb_define_const(rb_mSwe4r, "SE_BIT_GEOCTR_NO_ECL_LAT", INT2FIX(SE_BIT_GEOCTR_NO_ECL_LAT));
+	rb_define_const(rb_mSwe4r, "SE_BIT_NO_REFRACTION", INT2FIX(SE_BIT_NO_REFRACTION));
+	rb_define_const(rb_mSwe4r, "SE_BIT_CIVIL_TWILIGHT", INT2FIX(SE_BIT_CIVIL_TWILIGHT));
+	rb_define_const(rb_mSwe4r, "SE_BIT_NAUTIC_TWILIGHT", INT2FIX(SE_BIT_NAUTIC_TWILIGHT));
+	rb_define_const(rb_mSwe4r, "SE_BIT_ASTRO_TWILIGHT", INT2FIX(SE_BIT_ASTRO_TWILIGHT));
+	rb_define_const(rb_mSwe4r, "SE_BIT_FIXED_DISC_SIZE", INT2FIX(SE_BIT_FIXED_DISC_SIZE));
+	rb_define_const(rb_mSwe4r, "SE_BIT_HINDU_RISING", INT2FIX(SE_BIT_HINDU_RISING));
 }

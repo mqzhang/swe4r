@@ -142,5 +142,15 @@ class Swe4rTest < Test::Unit::TestCase
     Swe4r::swe_houses(2444838.972916667, 45.45, -112.183333, 'P'))
   end
   
+  def test_swe_rise_trans
+    sunrise = Swe4r::swe_rise_trans(2444838.972916667, Swe4r::SE_SUN, Swe4r::SEFLG_MOSEPH, Swe4r::SE_CALC_RISE | Swe4r::SE_BIT_HINDU_RISING, 45.45, -112.183333, 0, 0, 0)
+    assert_equal 2444839.210048978, sunrise
+  end
+
+  def test_swe_rise_trans_true_hor
+    sunrise = Swe4r::swe_rise_trans_true_hor(2444838.972916667, Swe4r::SE_SUN, Swe4r::SEFLG_MOSEPH, Swe4r::SE_CALC_RISE | Swe4r::SE_BIT_HINDU_RISING, 45.45, -112.183333, 0, 0, 0, 1)
+    assert_equal 2444839.2188771414, sunrise
+  end
+
 end
 
