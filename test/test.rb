@@ -115,7 +115,7 @@ class Swe4rTest < Test::Unit::TestCase
     systems = ['P','K','O','R','C','A','E','V','X','H','T','B'] # 'G'
     systems.each do |s|
       Swe4r::swe_houses(2444838.972916667, 45.45, -112.183333, s)
-      puts s
+      # puts s
     end
     
     # Test using Placidus house system
@@ -157,19 +157,23 @@ class Swe4rTest < Test::Unit::TestCase
   end
 
   def test_swe_azalt
-    lon =   61.2163129
-    lat = -149.894852
+    lat =   61.2163129
+    lon = -149.894852
     longitude, latitude, distance = 149.271, -0.00012, 1.0113
 
     # longitude, latitude, distance
     azimuth, altitude, app_altitude = Swe4r::swe_azalt(2444838.972916667, Swe4r::SE_ECL2HOR, lon, lat, 0,0,0, longitude, latitude, distance)
-    assert_equal 123, azimuth
-    assert_equal 123, altitude
-    assert_equal 123, app_altitude
+    assert_equal 199.96260368887175, azimuth
+    assert_equal -15.418741801398292, altitude
+    assert_equal -15.418741801398292, app_altitude
   end
 
-  # def test_swe_cotrans
-  # end
+  def test_swe_cotrans
+    a,b,c = Swe4r::swe_cotrans( 90, 99, -8, 1)
+    assert_equal 221.9365465392914, a
+    assert_equal -77.98034646731611, b
+    assert_equal 1.0, c
+  end
 
 end
 

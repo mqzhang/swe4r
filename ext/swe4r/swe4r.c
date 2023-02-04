@@ -405,35 +405,25 @@ static VALUE t_swe_rise_trans_true_hor(VALUE self, VALUE julian_day, VALUE body,
 // ·     xaz[2] = apparent (refracted) altitude above horizon in degrees.
 // The apparent altitude of a body depends on the atmospheric pressure and temperature. If only the true altitude is required, these parameters can be neglected.
 // If atpress is given the value 0, the function estimates the pressure from the geographical altitude given in geopos[2] and attemp. If geopos[2] is 0, atpress will be estimated for sea level.
-static VALUE t_swe_azalt(int argc, VALUE *argv, VALUE self) {
-	// VALUE self, VALUE julian_day, VALUE flag, VALUE lon, VALUE lat, VALUE height, VALUE pressure, VALUE temp, VALUE in0, VALUE in1, VALUE in2 )
-	if (argc > 10 || argc < 9)
-	{ // there should only be 9 or 10 arguments
-		rb_raise(rb_eArgError, "wrong number of arguments");
-	}
-	double julian_day = NUM2DBL(argv[0]);
-	int flag = NUM2INT(argv[1]);
-
+static VALUE t_swe_azalt( VALUE self, VALUE julian_day, VALUE flag, VALUE lon, VALUE lat, VALUE height, VALUE pressure, VALUE temp, VALUE in0, VALUE in1, VALUE in2 )
+{
 	double geopos[3];
-	geopos[0] = NUM2DBL(argv[2]);  // NUM2DBL(lon);
-	geopos[1] = NUM2DBL(argv[3]);  // NUM2DBL(lat);
-	geopos[2] = NUM2DBL(argv[4]);  // NUM2DBL(height);
-
-	double pressure = NUM2DBL(argv[5]);
-	double temp = NUM2DBL(argv[6]);
+	geopos[0] = NUM2DBL(lon);
+	geopos[1] = NUM2DBL(lat);
+	geopos[2] = NUM2DBL(height);
 
 	double xin[3];
-	xin[0] = NUM2DBL(argv[7]);  // NUM2DBL(in0);
-	xin[1] = NUM2DBL(argv[8]);  // NUM2DBL(in1);
-	xin[2] = (argc==10) ? NUM2DBL(argv[9]) : 1.0;  // NUM2DBL(in2);
+	xin[0] = NUM2DBL(in0);
+	xin[1] = NUM2DBL(in1);
+	xin[2] = NUM2DBL(in2);
 	double xaz[3];
 
-	swe_azalt(julian_day, flag, geopos, pressure, temp, xin, xaz);
+	swe_azalt(NUM2DBL(julian_day), NUM2INT(flag), geopos, NUM2DBL(pressure), NUM2DBL(temp), xin, xaz);
 
 	VALUE output = rb_ary_new();
-	rb_ary_push(output, xaz[0]);
-	rb_ary_push(output, xaz[1]);
-	rb_ary_push(output, xaz[2]);
+	rb_ary_push(output, rb_float_new(xaz[0]));
+	rb_ary_push(output, rb_float_new(xaz[1]));
+	rb_ary_push(output, rb_float_new(xaz[2]));
 	return output;
 }
 // https://www.astro.com/swisseph/swephprg.htm#_Toc112949076
@@ -446,25 +436,25 @@ static VALUE t_swe_azalt(int argc, VALUE *argv, VALUE self) {
 // double eps);        /* obliquity of ecliptic, in degrees. */
 static VALUE t_swe_cotrans(int argc, VALUE *argv, VALUE self) {
 	// VALUE self, VALUE VALUE lon, VALUE lat, VALUE distance
-	if (argc > 3 || argc < 4)
+	if (argc < 3 || argc > 4)
 	{ // there should only be 3 or 4 arguments
 		rb_raise(rb_eArgError, "wrong number of arguments");
 	}
 	double eps = NUM2DBL(argv[0]);
 	double xpo[3];
 	xpo[0] = NUM2DBL(argv[1]);  // NUM2DBL(lon);
-	xpo[1] = NUM2DBL(argv[2]);  // NUM2DBL(lat);	
-	xpo[2] = (argc==4) ? NUM2DBL(argv[3]) : 1.0;
+	xpo[1] = NUM2DBL(argv[2]);  // NUM2DBL(lat);
+	xpo[2] = NUM2DBL((argc == 4) ? argv[3] : 1.0);
 
 	double xpn[3];
 
 	swe_cotrans(xpo, xpn, eps);
 
 	VALUE output = rb_ary_new();
-	rb_ary_push(output, xpn[0]);
-	rb_ary_push(output, xpn[1]);
+	rb_ary_push(output, rb_float_new(xpn[0]));
+	rb_ary_push(output, rb_float_new(xpn[1]));
 	if (argc == 4)
-		rb_ary_push(output, xpn[2]);
+		rb_ary_push(output, rb_float_new(xpn[2]));
 	return output;
 }
 
@@ -492,7 +482,7 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ex_ut", t_swe_get_ayanamsa_ex_ut, 2);
 	rb_define_module_function(rb_mSwe4r, "swe_rise_trans", t_swe_rise_trans, 9);
 	rb_define_module_function(rb_mSwe4r, "swe_rise_trans_true_hor", t_swe_rise_trans_true_hor, 10);
-	rb_define_module_function(rb_mSwe4r, "swe_azalt", t_swe_azalt, -1);
+	rb_define_module_function(rb_mSwe4r, "swe_azalt", t_swe_azalt, 10);
 	rb_define_module_function(rb_mSwe4r, "swe_cotrans", t_swe_cotrans, -1);
 
 	// Constants
