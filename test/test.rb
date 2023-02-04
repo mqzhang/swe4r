@@ -156,5 +156,20 @@ class Swe4rTest < Test::Unit::TestCase
     assert_equal 2444839.2188771414, sunrise
   end
 
+  def test_swe_azalt
+    lon =   61.2163129
+    lat = -149.894852
+    longitude, latitude, distance = 149.271, -0.00012, 1.0113
+
+    # longitude, latitude, distance
+    azimuth, altitude, app_altitude = Swe4r::swe_azalt(2444838.972916667, Swe4r::SE_ECL2HOR, lon, lat, 0,0,0, longitude, latitude, distance)
+    assert_equal 123, azimuth
+    assert_equal 123, altitude
+    assert_equal 123, app_altitude
+  end
+
+  # def test_swe_cotrans
+  # end
+
 end
 

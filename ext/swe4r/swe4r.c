@@ -384,7 +384,94 @@ static VALUE t_swe_rise_trans_true_hor(VALUE self, VALUE julian_day, VALUE body,
 	return rb_float_new(retval);
 }
 
-/* TODO: bind swe_house_pos(), what is an ARMC?? */
+// https://www.astro.com/swisseph/swephprg.htm#_Toc112948998
+// swe_azalt() computes the horizontal coordinates (azimuth and altitude) of a planet or a star from either ecliptical or equatorial coordinates.
+// void swe_azalt(
+// double tjd_ut,      // UT
+// int32 calc_flag,    // SE_ECL2HOR or SE_EQU2HOR
+// double *geopos,     // array of 3 doubles: geograph. long., lat., height
+// double atpress,     // atmospheric pressure in mbar (hPa)
+// double attemp,      // atmospheric temperature in degrees Celsius
+// double *xin,        // array of 3 doubles: position of body in either ecliptical or equatorial coordinates, depending on calc_flag
+// double *xaz);       // return array of 3 doubles, containing azimuth, true altitude, apparent altitude
+// If calc_flag = SE_ECL2HOR, set xin[0] = ecl. long., xin[1] = ecl. lat., (xin[2] = distance (not required));
+// else
+// if calc_flag = SE_EQU2HOR, set xin[0] = right ascension, xin[1] = declination, (xin[2] = distance (not required));
+// #define SE_ECL2HOR  0
+// #define SE_EQU2HOR  1
+// The return values are:
+// ·     xaz[0] = azimuth, i.e. position degree, measured from the south point to west;
+// ·     xaz[1] = true altitude above horizon in degrees;
+// ·     xaz[2] = apparent (refracted) altitude above horizon in degrees.
+// The apparent altitude of a body depends on the atmospheric pressure and temperature. If only the true altitude is required, these parameters can be neglected.
+// If atpress is given the value 0, the function estimates the pressure from the geographical altitude given in geopos[2] and attemp. If geopos[2] is 0, atpress will be estimated for sea level.
+static VALUE t_swe_azalt(int argc, VALUE *argv, VALUE self) {
+	// VALUE self, VALUE julian_day, VALUE flag, VALUE lon, VALUE lat, VALUE height, VALUE pressure, VALUE temp, VALUE in0, VALUE in1, VALUE in2 )
+	if (argc > 10 || argc < 9)
+	{ // there should only be 9 or 10 arguments
+		rb_raise(rb_eArgError, "wrong number of arguments");
+	}
+	double julian_day = NUM2DBL(argv[0]);
+	int flag = NUM2INT(argv[1]);
+
+	double geopos[3];
+	geopos[0] = NUM2DBL(argv[2]);  // NUM2DBL(lon);
+	geopos[1] = NUM2DBL(argv[3]);  // NUM2DBL(lat);
+	geopos[2] = NUM2DBL(argv[4]);  // NUM2DBL(height);
+
+	double pressure = NUM2DBL(argv[5]);
+	double temp = NUM2DBL(argv[6]);
+
+	double xin[3];
+	xin[0] = NUM2DBL(argv[7]);  // NUM2DBL(in0);
+	xin[1] = NUM2DBL(argv[8]);  // NUM2DBL(in1);
+	xin[2] = (argc==10) ? NUM2DBL(argv[9]) : 1.0;  // NUM2DBL(in2);
+	double xaz[3];
+
+	swe_azalt(julian_day, flag, geopos, pressure, temp, xin, xaz);
+
+	VALUE output = rb_ary_new();
+	rb_ary_push(output, xaz[0]);
+	rb_ary_push(output, xaz[1]);
+	rb_ary_push(output, xaz[2]);
+	return output;
+}
+// https://www.astro.com/swisseph/swephprg.htm#_Toc112949076
+/* equator -> ecliptic    : eps must be positive
+* ecliptic -> equator    : eps must be negative
+* eps, longitude and latitude are in positive degrees! */
+// void swe_cotrans(
+// double *xpo,        /* 3 doubles: long., lat., dist. to be converted; distance remains unchanged, can be set to 1.00 */
+// double *xpn,        /* 3 doubles: long., lat., dist. Result of the conversion */
+// double eps);        /* obliquity of ecliptic, in degrees. */
+static VALUE t_swe_cotrans(int argc, VALUE *argv, VALUE self) {
+	// VALUE self, VALUE VALUE lon, VALUE lat, VALUE distance
+	if (argc > 3 || argc < 4)
+	{ // there should only be 3 or 4 arguments
+		rb_raise(rb_eArgError, "wrong number of arguments");
+	}
+	double eps = NUM2DBL(argv[0]);
+	double xpo[3];
+	xpo[0] = NUM2DBL(argv[1]);  // NUM2DBL(lon);
+	xpo[1] = NUM2DBL(argv[2]);  // NUM2DBL(lat);	
+	xpo[2] = (argc==4) ? NUM2DBL(argv[3]) : 1.0;
+
+	double xpn[3];
+
+	swe_cotrans(xpo, xpn, eps);
+
+	VALUE output = rb_ary_new();
+	rb_ary_push(output, xpn[0]);
+	rb_ary_push(output, xpn[1]);
+	if (argc == 4)
+		rb_ary_push(output, xpn[2]);
+	return output;
+}
+
+
+
+// TODO: bind swe_house_pos(), given ARMC
+
 
 void Init_swe4r()
 {
@@ -405,6 +492,8 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_get_ayanamsa_ex_ut", t_swe_get_ayanamsa_ex_ut, 2);
 	rb_define_module_function(rb_mSwe4r, "swe_rise_trans", t_swe_rise_trans, 9);
 	rb_define_module_function(rb_mSwe4r, "swe_rise_trans_true_hor", t_swe_rise_trans_true_hor, 10);
+	rb_define_module_function(rb_mSwe4r, "swe_azalt", t_swe_azalt, -1);
+	rb_define_module_function(rb_mSwe4r, "swe_cotrans", t_swe_cotrans, -1);
 
 	// Constants
 
@@ -485,6 +574,10 @@ void Init_swe4r()
 
 	rb_define_const(rb_mSwe4r, "SE_GREG_CAL", INT2FIX(SE_GREG_CAL));
 	rb_define_const(rb_mSwe4r, "SE_JUL_CAL", INT2FIX(SE_JUL_CAL));
+
+	rb_define_const(rb_mSwe4r, "SE_ECL2HOR", INT2FIX(SE_ECL2HOR));
+	rb_define_const(rb_mSwe4r, "SE_EQU2HOR", INT2FIX(SE_EQU2HOR));
+
 
 	rb_define_const(rb_mSwe4r, "SE_CALC_RISE", INT2FIX(SE_CALC_RISE));
 	rb_define_const(rb_mSwe4r, "SE_CALC_SET", INT2FIX(SE_CALC_SET));
