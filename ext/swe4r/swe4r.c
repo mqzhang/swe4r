@@ -539,8 +539,9 @@ void Init_swe4r()
 	rb_define_const(rb_mSwe4r, "SEFLG_SIDEREAL", INT2FIX(SEFLG_SIDEREAL));
 	rb_define_const(rb_mSwe4r, "SEFLG_ICRS", INT2FIX(SEFLG_ICRS));
 
-	rb_define_const(rb_mSwe4r, "SE_SIDM_FAGAN_BRADLEY", INT2FIX(SE_SIDM_FAGAN_BRADLEY));
-	rb_define_const(rb_mSwe4r, "SE_SIDM_LAHIRI", INT2FIX(SE_SIDM_LAHIRI));
+	/* sidereal modes (ayanamsas) */
+	rb_define_const(rb_mSwe4r, "SE_SIDM_FAGAN_BRADLEY", INT2FIX(SE_SIDM_FAGAN_BRADLEY)); // 0
+	rb_define_const(rb_mSwe4r, "SE_SIDM_LAHIRI", INT2FIX(SE_SIDM_LAHIRI));	
 	rb_define_const(rb_mSwe4r, "SE_SIDM_DELUCE", INT2FIX(SE_SIDM_DELUCE));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_RAMAN", INT2FIX(SE_SIDM_RAMAN));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_USHASHASHI", INT2FIX(SE_SIDM_USHASHASHI));
@@ -560,7 +561,34 @@ void Init_swe4r()
 	rb_define_const(rb_mSwe4r, "SE_SIDM_J2000", INT2FIX(SE_SIDM_J2000));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_J1900", INT2FIX(SE_SIDM_J1900));
 	rb_define_const(rb_mSwe4r, "SE_SIDM_B1950", INT2FIX(SE_SIDM_B1950));
-	rb_define_const(rb_mSwe4r, "SE_SIDM_USER", INT2FIX(SE_SIDM_USER));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_SURYASIDDHANTA", INT2FIX(SE_SIDM_SURYASIDDHANTA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_SURYASIDDHANTA_MSUN", INT2FIX(SE_SIDM_SURYASIDDHANTA_MSUN));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_ARYABHATA", INT2FIX(SE_SIDM_ARYABHATA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_ARYABHATA_MSUN", INT2FIX(SE_SIDM_ARYABHATA_MSUN));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_SS_REVATI", INT2FIX(SE_SIDM_SS_REVATI));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_SS_CITRA", INT2FIX(SE_SIDM_SS_CITRA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_TRUE_CITRA", INT2FIX(SE_SIDM_TRUE_CITRA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_TRUE_REVATI", INT2FIX(SE_SIDM_TRUE_REVATI));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_TRUE_PUSHYA", INT2FIX(SE_SIDM_TRUE_PUSHYA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALCENT_RGILBRAND", INT2FIX(SE_SIDM_GALCENT_RGILBRAND));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALEQU_IAU1958", INT2FIX(SE_SIDM_GALEQU_IAU1958));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALEQU_TRUE", INT2FIX(SE_SIDM_GALEQU_TRUE));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALEQU_MULA", INT2FIX(SE_SIDM_GALEQU_MULA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALALIGN_MARDYKS", INT2FIX(SE_SIDM_GALALIGN_MARDYKS));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_TRUE_MULA", INT2FIX(SE_SIDM_TRUE_MULA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALCENT_MULA_WILHELM", INT2FIX(SE_SIDM_GALCENT_MULA_WILHELM));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_ARYABHATA_522", INT2FIX(SE_SIDM_ARYABHATA_522));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_BABYL_BRITTON", INT2FIX(SE_SIDM_BABYL_BRITTON));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_TRUE_SHEORAN", INT2FIX(SE_SIDM_TRUE_SHEORAN));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALCENT_COCHRANE", INT2FIX(SE_SIDM_GALCENT_COCHRANE));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_GALEQU_FIORENZA", INT2FIX(SE_SIDM_GALEQU_FIORENZA));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_VALENS_MOON", INT2FIX(SE_SIDM_VALENS_MOON));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_LAHIRI_1940", INT2FIX(SE_SIDM_LAHIRI_1940));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_LAHIRI_VP285", INT2FIX(SE_SIDM_LAHIRI_VP285));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_KRISHNAMURTI_VP291", INT2FIX(SE_SIDM_KRISHNAMURTI_VP291));
+	rb_define_const(rb_mSwe4r, "SE_SIDM_LAHIRI_ICRC", INT2FIX(SE_SIDM_LAHIRI_ICRC)); // 46
+	rb_define_const(rb_mSwe4r, "SE_SIDM_USER", INT2FIX(SE_SIDM_USER)); //255 
+
 
 	rb_define_const(rb_mSwe4r, "SE_GREG_CAL", INT2FIX(SE_GREG_CAL));
 	rb_define_const(rb_mSwe4r, "SE_JUL_CAL", INT2FIX(SE_JUL_CAL));
