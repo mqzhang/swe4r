@@ -458,10 +458,27 @@ static VALUE t_swe_cotrans(int argc, VALUE *argv, VALUE self) {
 	return output;
 }
 
+static VALUE t_swe_house_pos( VALUE self, VALUE armc, VALUE geolat, VALUE eps, VALUE lat, VALUE hsys, VALUE eclon, VALUE eclat )
+{
+// double armc,        /* ARMC */
+// double geolat,      /* geographic latitude, in degrees */
+// double eps,              /* ecliptic obliquity, in degrees */
+// int hsys,                /* house method, one of the letters PKRCAV */
+// double *xpin,       /* array of 2 doubles: ecl. longitude and latitude of the planet */
+// char *serr);             /* return area for error or warning message */
 
+	double eclpos[2];
+	eclpos[0] = NUM2DBL(eclon);
+	eclpos[1] = NUM2DBL(eclat);
+	char serr[AS_MAXCH];
 
-// TODO: bind swe_house_pos(), given ARMC
+	double retval = swe_house_pos(NUM2DBL(armc), NUM2DBL(geolat), NUM2DBL(eps), NUM2INT(hsys), eclpos, serr);
+	if (retval < 0)
+		rb_raise(rb_eRuntimeError, serr);
 
+	VALUE output = rb_float_new(retval);
+	return output;
+}
 
 void Init_swe4r()
 {
@@ -484,6 +501,7 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_rise_trans_true_hor", t_swe_rise_trans_true_hor, 10);
 	rb_define_module_function(rb_mSwe4r, "swe_azalt", t_swe_azalt, 10);
 	rb_define_module_function(rb_mSwe4r, "swe_cotrans", t_swe_cotrans, -1);
+	rb_define_module_function(rb_mSwe4r, "swe_house_pos", t_swe_house_pos, 7);
 
 	// Constants
 
