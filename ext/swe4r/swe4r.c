@@ -458,7 +458,7 @@ static VALUE t_swe_cotrans(int argc, VALUE *argv, VALUE self) {
 	return output;
 }
 
-static VALUE t_swe_house_pos( VALUE self, VALUE armc, VALUE geolat, VALUE eps, VALUE lat, VALUE hsys, VALUE eclon, VALUE eclat )
+static VALUE t_swe_house_pos( VALUE self, VALUE armc, VALUE geolat, VALUE eps, VALUE hsys, VALUE eclon, VALUE eclat )
 {
 // double armc,        /* ARMC */
 // double geolat,      /* geographic latitude, in degrees */
@@ -501,7 +501,7 @@ void Init_swe4r()
 	rb_define_module_function(rb_mSwe4r, "swe_rise_trans_true_hor", t_swe_rise_trans_true_hor, 10);
 	rb_define_module_function(rb_mSwe4r, "swe_azalt", t_swe_azalt, 10);
 	rb_define_module_function(rb_mSwe4r, "swe_cotrans", t_swe_cotrans, -1);
-	rb_define_module_function(rb_mSwe4r, "swe_house_pos", t_swe_house_pos, 7);
+	rb_define_module_function(rb_mSwe4r, "swe_house_pos", t_swe_house_pos, 6);
 
 	// Constants
 
