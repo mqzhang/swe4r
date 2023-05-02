@@ -137,7 +137,7 @@ static VALUE t_swe_calc_ut(VALUE self, VALUE julian_ut, VALUE body, VALUE iflag)
 	char serr[AS_MAXCH];
 
 	if (swe_calc_ut(NUM2DBL(julian_ut), NUM2INT(body), NUM2LONG(iflag), results, serr) < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 
 	VALUE output = rb_ary_new();
 	for (int i = 0; i < 6; i++)
@@ -198,7 +198,7 @@ static VALUE t_swe_get_ayanamsa_ex_ut(VALUE self, VALUE julian_ut, VALUE flag )
 	// }
 
 	if (swe_get_ayanamsa_ex_ut(NUM2DBL(julian_ut), NUM2INT(flag), &ayanamsha, serr) < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 
 	return rb_float_new(ayanamsha);
 }
@@ -240,7 +240,7 @@ static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE lo
 	char serr[AS_MAXCH];
 
 	if (swe_houses(NUM2DBL(julian_day), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc) < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 
 	VALUE _cusps = rb_ary_new();
 	for (int i = 0; i < 13; i++)
@@ -284,7 +284,7 @@ static VALUE t_swe_houses_ex2(VALUE self, VALUE julian_day, VALUE flag, VALUE la
 	char serr[AS_MAXCH];
 
 	if (swe_houses_ex2(NUM2DBL(julian_day), NUM2INT(flag), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc, cusps_speed, ascmc_speed, serr) < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 
 
 	VALUE _cusps = rb_ary_new();
@@ -343,7 +343,7 @@ static VALUE t_swe_rise_trans(VALUE self, VALUE julian_day, VALUE body, VALUE fl
 	double retval;
 
 	if (swe_rise_trans(NUM2DBL(julian_day), ipl, starname, NUM2INT(flag), NUM2INT(rmsi), geopos, NUM2DBL(pressure), NUM2DBL(temp), &retval, serr) < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 	return rb_float_new(retval);
 }
 
@@ -380,7 +380,7 @@ static VALUE t_swe_rise_trans_true_hor(VALUE self, VALUE julian_day, VALUE body,
 	double retval;
 
 	if (swe_rise_trans_true_hor(NUM2DBL(julian_day), ipl, starname, NUM2INT(flag), NUM2INT(rmsi), geopos, NUM2DBL(pressure), NUM2DBL(temp), NUM2DBL(hor_height), &retval, serr) < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 	return rb_float_new(retval);
 }
 
@@ -474,7 +474,7 @@ static VALUE t_swe_house_pos( VALUE self, VALUE armc, VALUE geolat, VALUE eps, V
 
 	double retval = swe_house_pos(NUM2DBL(armc), NUM2DBL(geolat), NUM2DBL(eps), NUM2INT(hsys), eclpos, serr);
 	if (retval < 0)
-		rb_raise(rb_eRuntimeError, serr);
+		rb_raise(rb_eRuntimeError, "%s", serr);
 
 	VALUE output = rb_float_new(retval);
 	return output;
