@@ -177,7 +177,7 @@ static VALUE t_swe_calc_ut(VALUE self, VALUE julian_ut, VALUE body, VALUE iflag)
 	int i=0;
 	
 	if ( swe_calc_ut(NUM2DBL(julian_ut), NUM2INT(body), NUM2LONG(iflag), results,  serr) < 0 )
-		rb_raise (rb_eRuntimeError, serr);
+		rb_raise (rb_eRuntimeError, "%s", serr);
 	
 	for ( i = 0; i < 6; i++)
 		rb_funcall(arr, id_push, 1, rb_float_new(results[i]));
@@ -250,7 +250,7 @@ static VALUE t_swe_houses(VALUE self, VALUE julian_day, VALUE latitude, VALUE lo
 	int i =0;
 	
 	if ( swe_houses(NUM2DBL(julian_day), NUM2DBL(latitude), NUM2DBL(longitude), NUM2CHR(house_system), cusps, ascmc) < 0 )
-		rb_raise (rb_eRuntimeError, serr);
+		rb_raise (rb_eRuntimeError, "%s", serr);
 	
 	for ( i = 0; i < 13; i++)
 		rb_funcall(arr, id_push, 1, rb_float_new(cusps[i]));
